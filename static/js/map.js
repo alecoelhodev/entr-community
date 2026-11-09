@@ -16,6 +16,8 @@ document.addEventListener("alpine:init", () => {
         map = L.map(this.$refs.map).setView([38.7223, -9.1393], 13);
         L.tileLayer(data.tileUrl, {
           maxZoom: 19,
+          // OSM's tile policy requires a Referer; the page-wide policy (same-origin) strips it.
+          referrerPolicy: "strict-origin-when-cross-origin",
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
         markers = L.geoJSON(null, {
