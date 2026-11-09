@@ -1,0 +1,14 @@
+[project]
+name = "entr-community"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "django==6.1.*",
+    "django-mongodb-backend==6.1.*",
+    "django-htmx>=1.29,<2",
+    "whitenoise>=6.12,<7",
+    "gunicorn>=26,<27",
+]
+
+[tool.uv]
+package = false

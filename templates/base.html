@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Inline indicator styles and eval would violate our CSP. #}
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false}'>
+  <title>{% block title %}entr community{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+  <script src="{% static 'vendor/leaflet/leaflet.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+  {# Alpine last: components must be registered on alpine:init before it starts. #}
+  <script src="{% static 'vendor/alpine/alpine-csp.min.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="site-header">
+    <a href="{% url 'places:map' %}" class="brand">entr community</a>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>
