@@ -30,3 +30,4 @@ docker compose exec web python manage.py test
 - Front-end libs are vendored in `static/vendor/` (versions in `static/vendor/VERSIONS`). Alpine is the CSP build: register components with `Alpine.data()` in JS; no inline expressions beyond simple property access.
 - The public OSM tile server is for light use only. Set `MAP_TILE_URL` to a commercial or self-hosted tile server before production traffic (the CSP `img-src` follows it).
 - Production: set `DJANGO_DEBUG=0`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`; the image runs gunicorn by default. See `.env.example`.
+- Deploys to Cloud Run on push to `main` via GitHub Actions. One-time setup and rollback: [docs/deployment.md](docs/deployment.md).

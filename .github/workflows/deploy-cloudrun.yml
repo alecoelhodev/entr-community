@@ -1,0 +1,134 @@
+# Tests, then builds the image, pushes it to Artifact Registry, runs migrations
+# and deploys to Cloud Run on every push to main.
+# One-time GCP / Atlas / repo-variable setup: docs/deployment.md.
+
+name: 'Build and Deploy to Cloud Run'
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cloudrun
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: '${{ vars.GCP_PROJECT_ID }}'
+  REGION: '${{ vars.GCP_REGION }}'
+  WORKLOAD_IDENTITY_PROVIDER: '${{ vars.GCP_WIF_PROVIDER }}'
+  SERVICE: 'entr-community'
+  REPOSITORY: 'entr-community'
+
+jobs:
+  test:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
+
+      # compose.yaml's mongo healthcheck initiates the rs0 replica set; `run`
+      # waits for it via depends_on: service_healthy.
+      - name: 'Run tests'
+        run: |-
+          docker compose build web
+          docker compose run --rm web python manage.py test
+
+      - name: 'Stop services'
+        if: always()
+        run: docker compose down --volumes
+
+  deploy:
+    needs: test
+    runs-on: 'ubuntu-latest'
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
+        with:
+          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+          project_id: '${{ env.PROJECT_ID }}'
+
+      - name: 'Docker Auth'
+        uses: 'docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567' # docker/login-action@v3
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.auth_token }}'
+          registry: '${{ env.REGION }}-docker.pkg.dev'
+
+      - id: 'build'
+        name: 'Build and Push Container'
+        run: |-
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build --tag "${DOCKER_TAG}" .
+          docker push "${DOCKER_TAG}"
+          echo "docker_tag=${DOCKER_TAG}" >> "$GITHUB_OUTPUT"
+
+      # Granted to the Workload Identity principal for migrations only.
+      - id: 'migrate-secrets'
+        name: 'Fetch MongoDB URI'
+        uses: 'google-github-actions/get-secretmanager-secrets@bc9c54b29fdffb8a47776820a7d26e77b379d262' # google-github-actions/get-secretmanager-secrets@v3.0.0
+        with:
+          secrets: |-
+            MONGODB_URI:${{ env.PROJECT_ID }}/entr-mongodb-uri
+
+      # Runs from the image just built, so the applied migrations (including
+      # 2dsphere indexes) match the revision being deployed. This lands before
+      # traffic shifts, so the serving revision briefly sees the new schema:
+      # keep migrations additive and split destructive changes across deploys.
+      # The secret key is a placeholder for the settings guard; migrate signs nothing.
+      - name: 'Run database migrations'
+        env:
+          MONGODB_URI: '${{ steps.migrate-secrets.outputs.MONGODB_URI }}'
+        run: |-
+          docker run --rm -e MONGODB_URI -e MONGODB_NAME=entr_community -e DJANGO_SECRET_KEY=migrate-only \
+            "${{ steps.build.outputs.docker_tag }}" \
+            python manage.py migrate --noinput
+
+      - id: 'deploy'
+        name: 'Deploy to Cloud Run'
+        uses: 'google-github-actions/deploy-cloudrun@33553064113a37d688aa6937bacbdc481580be17' # google-github-actions/deploy-cloudrun@v2
+        with:
+          service: '${{ env.SERVICE }}'
+          region: '${{ env.REGION }}'
+          image: '${{ steps.build.outputs.docker_tag }}'
+          # No --allow-unauthenticated: run.developer can't set IAM policy, so it
+          # would silently no-op. Public access is a one-time allUsers grant
+          # (docs/deployment.md), keeping run.admin out of CI.
+          flags: '--service-account=entr-community-runtime@${{ env.PROJECT_ID }}.iam.gserviceaccount.com --port=8000'
+          # gunicorn's default single sync worker would serialize requests under
+          # Cloud Run's per-instance concurrency.
+          env_vars: |-
+            DJANGO_DEBUG=0
+            DJANGO_ALLOWED_HOSTS=${{ vars.CLOUD_RUN_HOST }}
+            MONGODB_NAME=entr_community
+            MAP_TILE_URL=${{ vars.MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' }}
+            GUNICORN_CMD_ARGS=--workers=2 --threads=4 --timeout=0
+          secrets: |-
+            DJANGO_SECRET_KEY=entr-django-secret-key:latest
+            MONGODB_URI=entr-mongodb-uri:latest
+
+      # Traffic has already shifted: this detects a bad revision, it doesn't
+      # prevent it. Rollback: docs/deployment.md.
+      - name: 'Smoke test deployed revision'
+        run: |-
+          # The public host, not steps.deploy.outputs.url (which may be the
+          # legacy *.a.run.app URL that ALLOWED_HOSTS doesn't list).
+          URL="https://${{ vars.CLOUD_RUN_HOST }}"
+          for path in "/" "/places.geojson?bbox=-9.2,38.6,-9.0,38.8"; do
+            echo "Checking ${URL}${path}"
+            curl --fail --silent --show-error --output /dev/null \
+              --retry 5 --retry-delay 3 --retry-all-errors \
+              "${URL}${path}"
+          done

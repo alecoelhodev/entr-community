@@ -46,6 +46,10 @@ Deps are managed with `uv` inside the image (`UV_PROJECT_ENVIRONMENT=/opt/venv`)
 - htmx is configured via a meta tag with `allowEval: false` and `includeIndicatorStyles: false`; CSRF token is sent through `hx-headers` on `<body>`.
 - Views use `@require_safe` for read-only endpoints (GET + HEAD).
 
+## Deployment
+
+`.github/workflows/deploy-cloudrun.yml`: on push to `main`, run the tests, then build, push to Artifact Registry, `migrate` against Atlas from the new image, deploy to Cloud Run and smoke-test. Project-specific values come from GitHub repo variables, and secrets from Secret Manager. A new required env var must be added to the workflow's `env_vars`/`secrets`. Setup, gotchas and rollback are in `docs/deployment.md`.
+
 ## Config
 
 Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. The public OSM tile server is for light use only; switch `MAP_TILE_URL` before production traffic.

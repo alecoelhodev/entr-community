@@ -17,6 +17,8 @@ COPY pyproject.toml uv.lock* ./
 RUN uv sync --no-install-project
 
 COPY . .
+# Placeholder only satisfies the settings guard; collectstatic signs nothing.
+RUN DJANGO_SECRET_KEY=build-only python manage.py collectstatic --noinput
 RUN useradd --create-home app && chown -R app /app
 USER app
 
