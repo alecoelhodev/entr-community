@@ -1,6 +1,6 @@
 # T02: Directory models + moderation admin
 
-**Status:** in progress
+**Status:** done
 **Depends on:** T01, T03
 **User stories:** US-10
 

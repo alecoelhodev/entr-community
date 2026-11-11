@@ -1,6 +1,6 @@
 # T04: Public map API: GeoJSON + nearby, with filters
 
-**Status:** blocked
+**Status:** in progress
 **Depends on:** T02
 **User stories:** US-1, US-2, US-3, US-5
 

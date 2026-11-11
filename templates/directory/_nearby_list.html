@@ -1,0 +1,28 @@
+{% load i18n %}
+{% if location_error %}
+  <p class="status">{% translate "Invalid location or radius." %}</p>
+{% elif filter_error %}
+  <p class="status">{% translate "Invalid filters. Pick a category from the list and keep the search under 100 characters." %}</p>
+{% else %}
+  <div class="results-head">
+    <h2>{% blocktranslate with radius=radius_km|floatformat:"-1" %}Within {{ radius }} km{% endblocktranslate %}</h2>
+    <span class="results-count">{% blocktranslate count n=businesses|length %}{{ n }} result{% plural %}{{ n }} results{% endblocktranslate %}</span>
+  </div>
+  <ol class="results">
+    {% for business in businesses %}
+      <li class="result-card" data-slug="{{ business.slug }}">
+        <span class="result-top">
+          <strong class="result-name">{{ business.name }}</strong>
+          <span class="result-distance">{% if business.distance_m < 1000 %}{{ business.distance_m|floatformat:0 }} m{% else %}{{ business.distance_km|floatformat:1 }} km{% endif %}</span>
+        </span>
+        <span class="result-meta">
+          <span class="chip">{{ business.category.name }}</span>
+          {% include "directory/_rating.html" %}
+          {% if business.offers_delivery %}<span class="badge">{% translate "Delivery" %}</span>{% endif %}
+        </span>
+      </li>
+    {% empty %}
+      <li class="hint">{% translate "No businesses match these filters here." %}</li>
+    {% endfor %}
+  </ol>
+{% endif %}

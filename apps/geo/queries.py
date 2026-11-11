@@ -18,22 +18,26 @@ def in_bbox(queryset, bbox: Polygon, field: str = "location"):
     return queryset.filter(**{f"{field}__within": bbox})
 
 
-def nearest(model, point: Point, radius_km: float, limit: int, field: str = "location"):
+def nearest(
+    model, point: Point, radius_km: float, limit: int, field: str = "location", query: dict | None = None
+):
     """Objects within `radius_km`, closest first, each annotated with `distance_m`.
+
+    `query` is a raw MongoDB filter applied inside `$geoNear` (so it runs
+    before the limit and can use indexes). It uses stored column names, e.g.
+    `category_id` for a FK. Build it only from validated values, never from
+    raw request strings.
 
     Requires the model's manager to be a `MongoManager` and `field` to have a
     2dsphere index (the backend creates one for every spatial field).
     """
-    pipeline = [
-        {
-            "$geoNear": {
-                "near": {"type": "Point", "coordinates": [point.x, point.y]},
-                "key": field,
-                "distanceField": "distance_m",
-                "maxDistance": radius_km * 1000,
-                "spherical": True,
-            }
-        },
-        {"$limit": limit},
-    ]
-    return model.objects.raw_aggregate(pipeline)
+    geo_near = {
+        "near": {"type": "Point", "coordinates": [point.x, point.y]},
+        "key": field,
+        "distanceField": "distance_m",
+        "maxDistance": radius_km * 1000,
+        "spherical": True,
+    }
+    if query:
+        geo_near["query"] = query
+    return model.objects.raw_aggregate([{"$geoNear": geo_near}, {"$limit": limit}])

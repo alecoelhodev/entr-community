@@ -1,6 +1,6 @@
 # T06: Business detail page + panel
 
-**Status:** blocked
+**Status:** ready
 **Depends on:** T02
 **User stories:** US-4
 

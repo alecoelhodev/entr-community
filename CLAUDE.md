@@ -29,12 +29,13 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 - `config/` — settings (single env-driven file), urls. `config/apps.py` holds ObjectId-based AppConfigs for contrib apps.
 - `apps/geo/` — reusable geo foundation, no models:
   - `forms.py` validates request coordinates at the boundary (`NearbyQueryForm`: lat/lng/radius ≤ 50 km; `BBoxForm`: `west,south,east,north`, span ≤ 5°). `LatLngFieldsMixin` gives ModelForms plain lat/lng inputs for a PointField (`set_initial_from()` / `point`).
-  - `queries.py`: `near` / `in_bbox` (ORM lookups) and `nearest` (`$geoNear` via `raw_aggregate`, sets `distance_m` on each result).
+  - `queries.py`: `near` / `in_bbox` (ORM lookups) and `nearest` (`$geoNear` via `raw_aggregate`, sets `distance_m` on each result; optional `query` is a raw Mongo filter inside `$geoNear`, built only from validated values and stored column names such as `category_id`).
   - `geojson.py`: objects → FeatureCollection.
 - `apps/directory/` — the product domain:
   - `search.py`: `normalize_terms` / `query_terms`.
   - `models.py`: `Category`; `Business` with embedded `Offering`s (`EmbeddedModelArrayField`). `Business.save()` generates the slug on create and refreshes `search_terms`; `Business.objects.approved()` is the public visibility filter.
   - `admin.py`: approve and reject actions.
+  - Public API: `/businesses.geojson?bbox=&category=&q=` (approved only, capped at 500) and `/businesses/nearby/?lat&lng&radius_km&category&q` (HTMX partial, capped at 50). Both validate filters with `BusinessFilterForm`; `q` must match **all** normalized terms. `raw_aggregate` results can't `select_related`, so resolve FKs with one `in_bulk` query.
 - `apps/places/` — example domain app using the foundation. Views: map page, bbox → GeoJSON (capped at 500), nearby → HTMX partial (capped at 50). Invalid input returns 400 with form errors only.
 - Front end: `static/js/map.js` registers `Alpine.data("placesMap")`; Leaflet fetches GeoJSON on debounced `moveend`, map click calls `htmx.ajax` to swap the nearby partial. URLs and tile URL are passed via `data-*` attributes from `templates/places/map.html`.
 
