@@ -1,0 +1,95 @@
+{% load i18n %}
+<article class="biz{% if in_panel %} biz-panel{% endif %}">
+  {% if business.status != "approved" %}
+    <div class="status-banner status-{{ business.status }}" role="status">
+      <strong><span class="status-dot" aria-hidden="true"></span>{{ business.get_status_display }}</strong>
+      <span>{% translate "Only you and moderators can see this page. It isn't on the map yet." %}</span>
+      {% if business.status == "rejected" and business.viewer_is_owner and business.rejection_reason %}
+        <div class="moderator-note">
+          <strong>{% translate "Moderator note" %}</strong>
+          <p>{{ business.rejection_reason|linebreaksbr }}</p>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="biz-main">
+    <div class="biz-tags">
+      <span class="chip">{{ business.category.name }}</span>
+      {% if business.offers_delivery %}
+        <span class="badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+          {% translate "Offers delivery" %}
+        </span>
+      {% endif %}
+    </div>
+    <h1 class="biz-name">{{ business.name }}</h1>
+    <div class="biz-meta">
+      {% include "directory/_rating.html" %}
+      <span class="biz-since">
+        {% if business.started_on %}
+          {% with year=business.started_on.year years=business.years_active %}
+            {% if years == 0 %}
+              {% blocktranslate %}Active since {{ year }} · less than a year{% endblocktranslate %}
+            {% else %}
+              {% blocktranslate count years=years %}Active since {{ year }} · {{ years }} year{% plural %}Active since {{ year }} · {{ years }} years{% endblocktranslate %}
+            {% endif %}
+          {% endwith %}
+        {% else %}
+          {% translate "Active since N/A" %}
+        {% endif %}
+      </span>
+    </div>
+    {% if business.description %}<p class="biz-description">{{ business.description|linebreaksbr }}</p>{% endif %}
+
+    {% if business.offerings %}
+      <section class="offerings" aria-labelledby="offerings-{{ business.slug }}">
+        <h2 id="offerings-{{ business.slug }}">{% translate "Products & prices" %}</h2>
+        <ul>
+          {% for offering in business.offerings %}
+            <li class="offering">
+              <span class="offering-text">
+                <strong>{{ offering.name }}</strong>
+                {% if offering.description %}<span>{{ offering.description }}</span>{% endif %}
+              </span>
+              <span class="offering-price">
+                {% if offering.price_from is not None %}
+                  {% with price=offering.price_from|floatformat:2 note=offering.price_note %}{% blocktranslate trimmed %}From ${{ price }} {{ note }}{% endblocktranslate %}{% endwith %}
+                {% else %}
+                  {% translate "Ask for price" %}
+                {% endif %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  </div>
+
+  {% if business.address or business.phone or business.website_url or business.instagram %}
+    <aside class="biz-contact" aria-label="{% translate 'Contact' %}">
+      <dl class="contact-list">
+        {% if business.address %}
+          <dt><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{% translate 'Address' %}"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></dt>
+          <dd>{{ business.address }}</dd>
+        {% endif %}
+        {% if business.phone %}
+          <dt><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{% translate 'Phone' %}"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></dt>
+          <dd><a href="tel:{{ business.phone_href }}">{{ business.phone }}</a></dd>
+        {% endif %}
+        {% if business.website_url %}
+          <dt><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-label="{% translate 'Website' %}"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></dt>
+          <dd><a href="{{ business.website_url }}" rel="noopener nofollow ugc" target="_blank">{{ business.website_url }}</a></dd>
+        {% endif %}
+        {% if business.instagram %}
+          <dt><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5v.01"/></svg></dt>
+          <dd><a href="https://www.instagram.com/{{ business.instagram|urlencode }}/" rel="noopener nofollow ugc" target="_blank">@{{ business.instagram }}</a></dd>
+        {% endif %}
+      </dl>
+    </aside>
+  {% endif %}
+
+  {% if in_panel %}
+    <a href="{% url 'directory:detail' business.slug %}" class="btn btn-secondary biz-full-link">{% translate "See reviews & full page" %}</a>
+  {% endif %}
+</article>

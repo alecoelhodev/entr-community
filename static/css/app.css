@@ -55,6 +55,8 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -0.01em; }
 .btn-primary { min-height: 48px; background: var(--accent); color: #fff; }
 .btn-primary:hover { background: var(--accent-hover); color: #fff; }
 .btn-dark { background: var(--ink); color: #fff; }
+.btn-secondary { background: var(--surface); border-color: var(--input-line); color: var(--ink); }
+.btn-secondary:hover { border-color: var(--ink-2); color: var(--ink); }
 .btn-dark:hover { background: var(--ink-2); color: #fff; }
 .btn:focus-visible, .nav-link:focus-visible, .field input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
@@ -121,9 +123,54 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -0.01em; }
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink);
 }
 .result-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.result-name { font-size: 16px; font-weight: 600; }
+.result-name { font-size: 16px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.result-name:hover { color: var(--accent); text-decoration: underline; }
 .result-distance { font-size: 13px; color: var(--muted); white-space: nowrap; }
 .result-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+
+/* Business detail (page and panel) */
+.content-page { max-width: 1120px; margin: 0 auto; padding: 24px 24px 56px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-bottom: 8px; font-weight: 600; text-decoration: none; }
+.biz { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.biz > .status-banner, .biz > .biz-full-link { grid-column: 1 / -1; }
+.biz-main, .biz-contact { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+.biz-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.biz-tags .badge { gap: 6px; }
+.biz-name { margin: 12px 0 8px; font-size: 34px; line-height: 1.1; font-weight: 700; }
+.biz-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 15px; color: var(--ink-2); }
+.biz-meta .rating .star { width: 18px; height: 18px; }
+.biz-description { margin: 16px 0 0; line-height: 1.6; color: var(--ink-2); }
+.offerings h2 { margin: 28px 0 12px; font-size: 20px; font-weight: 600; }
+.offerings ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.offering { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.offering-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.offering-text span { font-size: 14px; color: var(--muted); }
+.offering-price { flex: 0 0 auto; font-weight: 600; text-align: right; }
+.contact-list { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 14px 12px; margin: 0; }
+.contact-list dt { color: var(--muted); padding-top: 2px; }
+.contact-list dd { margin: 0; overflow-wrap: anywhere; line-height: 1.4; }
+.status-banner { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 14px; }
+.status-banner strong { display: inline-flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.status-pending { background: #FCF1DC; color: #7A4E00; }
+.status-rejected { background: var(--danger-bg); color: var(--danger); }
+.status-approved { background: #E1F2EF; color: #0B5C55; }
+.moderator-note { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface); color: var(--ink); }
+.moderator-note p { margin: 4px 0 0; }
+
+/* Panel variant: single column inside the map sidebar */
+.biz-panel { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.biz-panel .biz-main, .biz-panel .biz-contact { padding: 0; border: 0; border-radius: 0; background: none; }
+.biz-panel .biz-name { font-size: 28px; }
+
+@media (max-width: 900px) {
+  .biz { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .content-page { padding: 16px 16px 40px; }
+  .biz-main, .biz-contact { padding: 20px; }
+  .biz-name { font-size: 28px; }
+}
 
 /* Map (places example; replaced in T05) */
 .map-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(100dvh - var(--header-h)); }

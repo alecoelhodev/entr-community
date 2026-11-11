@@ -12,7 +12,7 @@
     {% for business in businesses %}
       <li class="result-card" data-slug="{{ business.slug }}">
         <span class="result-top">
-          <strong class="result-name">{{ business.name }}</strong>
+          <a class="result-name" href="{% url 'directory:detail' business.slug %}">{{ business.name }}</a>
           <span class="result-distance">{% if business.distance_m < 1000 %}{{ business.distance_m|floatformat:0 }} m{% else %}{{ business.distance_km|floatformat:1 }} km{% endif %}</span>
         </span>
         <span class="result-meta">
