@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django_mongodb_backend",
     "django_htmx",
+    "apps.accounts",
     "apps.geo",
     "apps.places",
     "apps.directory",
@@ -81,6 +82,11 @@ MIGRATION_MODULES = {
     "auth": "mongo_migrations.auth",
     "contenttypes": "mongo_migrations.contenttypes",
 }
+
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

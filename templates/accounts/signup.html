@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Sign up" %} · entr community{% endblock %}
+{% block content %}
+<div class="auth-layout">
+  <section class="auth-intro">
+    <h1>{% translate "Get found by the people next door." %}</h1>
+    <p class="lead">{% translate "List what you make or the service you offer. Neighbors searching for it in Doral will see you on the map." %}</p>
+    <ol class="steps">
+      <li><span class="step-n">1</span><span>{% translate "Create your account." %}</span></li>
+      <li><span class="step-n">2</span><span>{% translate "Add your business: location, what you offer and your prices." %}</span></li>
+      <li><span class="step-n">3</span><span>{% translate "A moderator reviews it, then it goes live on the map." %}</span></li>
+    </ol>
+  </section>
+  <form method="post" class="card auth-card" aria-labelledby="auth-title" novalidate>
+    {% csrf_token %}
+    <h2 id="auth-title">{% translate "Create your account" %}</h2>
+    {% for error in form.non_field_errors %}<p class="form-error" role="alert">{{ error }}</p>{% endfor %}
+    {% for field in form %}{% include "accounts/_field.html" %}{% endfor %}
+    <button type="submit" class="btn btn-primary">{% translate "Sign up" %}</button>
+    <p class="auth-switch">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Log in" %}</a></p>
+  </form>
+</div>
+{% endblock %}
