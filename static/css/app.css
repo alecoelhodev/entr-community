@@ -103,6 +103,28 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -0.01em; }
   .auth-card { padding: 24px 20px; }
 }
 
+/* Chips, badges, rating */
+.chip, .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.chip { background: var(--accent-soft); color: var(--accent); }
+.badge { background: var(--neutral-chip); color: var(--ink); }
+.rating { display: inline-flex; align-items: center; gap: 4px; color: var(--ink); }
+.rating .star { fill: var(--star); }
+.rating-count, .rating-none { font-weight: 400; color: var(--muted); }
+
+/* Search results */
+.results-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.results-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.results-count { font-size: 13px; color: var(--muted); }
+.results { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.result-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; color: var(--ink);
+}
+.result-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.result-name { font-size: 16px; font-weight: 600; }
+.result-distance { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.result-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+
 /* Map (places example; replaced in T05) */
 .map-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(100dvh - var(--header-h)); }
 .map { height: 100%; }

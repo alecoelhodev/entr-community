@@ -31,3 +31,11 @@ class GeoQueryTests(TestCase):
 
     def test_nearest_limit(self):
         self.assertEqual(len(list(nearest(Place, ORIGIN, 20, limit=1))), 1)
+
+    def test_nearest_with_query_filters(self):
+        results = list(nearest(Place, ORIGIN, 20, limit=10, query={"name": {"$in": ["10km", "1km"]}}))
+        self.assertEqual([p.name for p in results], ["1km", "10km"])
+
+    def test_nearest_without_query_unchanged(self):
+        results = list(nearest(Place, ORIGIN, 20, limit=10, query=None))
+        self.assertEqual([p.name for p in results], ["origin", "1km", "10km"])
