@@ -9,8 +9,8 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 | Task | Title | Depends on | Status |
 |---|---|---|---|
 | [T00](tasks/T00-ci-pr-checks.md) | CI checks on pull requests | — | done |
-| [T01](tasks/T01-accounts.md) | Accounts: custom user, signup, login | — | in progress |
-| [T02](tasks/T02-directory-models.md) | Directory models + moderation admin | T01, T03 | blocked |
+| [T01](tasks/T01-accounts.md) | Accounts: custom user, signup, login | — | done |
+| [T02](tasks/T02-directory-models.md) | Directory models + moderation admin | T01, T03 | in progress |
 | [T03](tasks/T03-search-terms.md) | Search term normalization | — | done |
 | [T04](tasks/T04-map-api.md) | Public map API (GeoJSON + nearby, filters) | T02 | blocked |
 | [T05](tasks/T05-map-ui.md) | Map UI: filters, search, detail panel | T04, T06 | blocked |
