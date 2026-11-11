@@ -23,7 +23,10 @@ env:
 
 jobs:
   test:
-    runs-on: 'ubuntu-latest'
+    # mongod 8.x refuses to start on Linux kernel >= 6.19 (SERVER-121912);
+    # ubuntu-24.04 runners ship 7.0.0-azure, ubuntu-22.04 ships 6.8. Revisit
+    # once the runner kernel is >= 7.0.14 and MongoDB lifts the check.
+    runs-on: 'ubuntu-22.04'
     permissions:
       contents: 'read'
     steps:
