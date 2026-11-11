@@ -1,6 +1,6 @@
 # T00: CI checks on pull requests
 
-**Status:** in progress
+**Status:** done
 **Depends on:** —
 **User stories:** US-13
 
