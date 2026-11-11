@@ -37,6 +37,10 @@ jobs:
           docker compose build web
           docker compose run --rm web python manage.py test
 
+      - name: 'Service logs'
+        if: failure()
+        run: docker compose logs --no-color
+
       - name: 'Stop services'
         if: always()
         run: docker compose down --volumes
