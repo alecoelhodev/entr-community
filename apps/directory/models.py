@@ -1,3 +1,6 @@
+import re
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.core.validators import MinValueValidator, RegexValidator
@@ -117,6 +120,15 @@ class Business(models.Model):
         today = timezone.localdate()
         before_anniversary = (today.month, today.day) < (self.started_on.month, self.started_on.day)
         return max(0, today.year - self.started_on.year - before_anniversary)
+
+    @property
+    def website_url(self) -> str:
+        """The website only if it's http(s), so a stored `javascript:` URL never becomes a link."""
+        return self.website if urlsplit(self.website).scheme.lower() in ("http", "https") else ""
+
+    @property
+    def phone_href(self) -> str:
+        return re.sub(r"[^\d+]", "", self.phone)
 
     @property
     def rating_avg(self) -> float | None:

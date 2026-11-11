@@ -1,5 +1,5 @@
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_safe
 
 from apps.geo.forms import BBoxForm, NearbyQueryForm
@@ -65,4 +65,26 @@ def businesses_nearby(request):
         request,
         "directory/_nearby_list.html",
         {"businesses": businesses, "radius_km": location.cleaned_data["radius_km"]},
+    )
+
+
+def get_visible_business(request, slug):
+    """Approved businesses for everyone; any status for the owner and staff. Otherwise 404."""
+    business = get_object_or_404(Business.objects.select_related("category"), slug=slug)
+    is_owner = business.owner_id == request.user.pk
+    if business.status != Business.Status.APPROVED and not (is_owner or request.user.is_staff):
+        raise Http404
+    business.viewer_is_owner = is_owner
+    return business
+
+
+@require_safe
+def business_detail(request, slug):
+    return render(request, "directory/detail.html", {"business": get_visible_business(request, slug)})
+
+
+@require_safe
+def business_panel(request, slug):
+    return render(
+        request, "directory/_detail_body.html", {"business": get_visible_business(request, slug), "in_panel": True}
     )

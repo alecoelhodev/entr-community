@@ -36,6 +36,7 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
   - `models.py`: `Category`; `Business` with embedded `Offering`s (`EmbeddedModelArrayField`). `Business.save()` generates the slug on create and refreshes `search_terms`; `Business.objects.approved()` is the public visibility filter.
   - `admin.py`: approve and reject actions.
   - Public API: `/businesses.geojson?bbox=&category=&q=` (approved only, capped at 500) and `/businesses/nearby/?lat&lng&radius_km&category&q` (HTMX partial, capped at 50). Both validate filters with `BusinessFilterForm`; `q` must match **all** normalized terms. `raw_aggregate` results can't `select_related`, so resolve FKs with one `in_bulk` query.
+  - Detail: `/b/<slug>/` (page) and `/b/<slug>/panel/` (HTMX partial) share `templates/directory/_detail_body.html`. `get_visible_business()` is the single visibility rule: approved for everyone, any status for the owner and staff, else 404. Render vendor URLs through `Business.website_url` (http/https only), never `website` directly.
 - `apps/places/` — example domain app using the foundation. Views: map page, bbox → GeoJSON (capped at 500), nearby → HTMX partial (capped at 50). Invalid input returns 400 with form errors only.
 - Front end: `static/js/map.js` registers `Alpine.data("placesMap")`; Leaflet fetches GeoJSON on debounced `moveend`, map click calls `htmx.ajax` to swap the nearby partial. URLs and tile URL are passed via `data-*` attributes from `templates/places/map.html`.
 
