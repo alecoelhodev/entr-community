@@ -1,6 +1,6 @@
 # T01: Accounts: custom user, signup, login
 
-**Status:** in progress
+**Status:** done
 **Depends on:** —
 **User stories:** US-6
 
