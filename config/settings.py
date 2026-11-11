@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django_htmx",
     "apps.geo",
     "apps.places",
+    "apps.directory",
 ]
 
 MIDDLEWARE = [

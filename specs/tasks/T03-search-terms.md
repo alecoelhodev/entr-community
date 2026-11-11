@@ -1,6 +1,6 @@
 # T03: Search term normalization
 
-**Status:** ready
+**Status:** in progress
 **Depends on:** —
 **User stories:** US-3
 
