@@ -8,7 +8,7 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 
 | Task | Title | Depends on | Status |
 |---|---|---|---|
-| [T00](tasks/T00-ci-pr-checks.md) | CI checks on pull requests | — | ready |
+| [T00](tasks/T00-ci-pr-checks.md) | CI checks on pull requests | — | in progress |
 | [T01](tasks/T01-accounts.md) | Accounts: custom user, signup, login | — | ready |
 | [T02](tasks/T02-directory-models.md) | Directory models + moderation admin | T01, T03 | blocked |
 | [T03](tasks/T03-search-terms.md) | Search term normalization | — | ready |

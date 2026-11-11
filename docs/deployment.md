@@ -1,8 +1,8 @@
 # Deployment (Cloud Run)
 
-`.github/workflows/deploy-cloudrun.yml` runs on every push to `main` (or manually via *Run workflow*):
+`.github/workflows/deploy-cloudrun.yml` runs on every push to `main` (or manually via *Run workflow*), and on pull requests against `main`, where only **test** runs:
 
-1. **test** — `manage.py test` against the Compose MongoDB replica set.
+1. **test** — `makemigrations --check --dry-run`, then `manage.py test` against the Compose MongoDB replica set.
 2. **deploy** — build the image → push to Artifact Registry → `migrate` from that image against Atlas → deploy to Cloud Run → smoke-test `/` and `/places.geojson`.
 
 GitHub authenticates with **Direct Workload Identity Federation**; no service-account key exists anywhere. The running service uses its own least-privilege runtime service account.
