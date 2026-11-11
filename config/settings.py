@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django_mongodb_backend",
     "django_htmx",
+    "apps.accounts",
     "apps.geo",
     "apps.places",
     "apps.directory",
