@@ -22,6 +22,8 @@ Deps are managed with `uv` inside the image (`UV_PROJECT_ENVIRONMENT=/opt/venv`)
 
 ## Architecture
 
+Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.md`. UI work follows the approved design in `specs/design.md`.
+
 - `config/` — settings (single env-driven file), urls. `config/apps.py` holds ObjectId-based AppConfigs for contrib apps.
 - `apps/geo/` — reusable geo foundation, no models:
   - `forms.py` validates request coordinates at the boundary (`NearbyQueryForm`: lat/lng/radius ≤ 50 km; `BBoxForm`: `west,south,east,north`, span ≤ 5°).
