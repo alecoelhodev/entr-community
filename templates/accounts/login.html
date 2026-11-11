@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Log in" %} · entr community{% endblock %}
+{% block content %}
+<div class="auth-layout">
+  <form method="post" class="card auth-card" aria-labelledby="auth-title" novalidate>
+    {% csrf_token %}
+    <h2 id="auth-title">{% translate "Log in" %}</h2>
+    {% for error in form.non_field_errors %}<p class="form-error" role="alert">{{ error }}</p>{% endfor %}
+    {% for field in form %}{% include "accounts/_field.html" %}{% endfor %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary">{% translate "Log in" %}</button>
+    <p class="auth-switch">{% translate "New here?" %} <a href="{% url 'accounts:signup' %}">{% translate "Create an account" %}</a></p>
+  </form>
+</div>
+{% endblock %}

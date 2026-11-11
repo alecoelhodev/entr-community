@@ -12,6 +12,7 @@ Django 6.1 server-rendered templates + HTMX + Alpine.js (CSP build) + Leaflet/OS
 docker compose up --build -d                              # mongo (single-node replica set rs0) + web (runserver)
 docker compose exec web python manage.py migrate
 docker compose exec web python manage.py seed_places      # Lisbon sample data, idempotent
+docker compose exec web python manage.py createsuperuser  # prompts for email (no username)
 docker compose exec web python manage.py test             # all tests (uses a real Mongo test DB)
 docker compose exec web python manage.py test apps.geo.tests.test_queries.GeoQueryTests.test_nearest_limit   # single test
 docker compose exec web python manage.py makemigrations <app>
@@ -24,6 +25,7 @@ Deps are managed with `uv` inside the image (`UV_PROJECT_ENVIRONMENT=/opt/venv`)
 
 Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.md`. UI work follows the approved design in `specs/design.md`.
 
+- `apps/accounts/` — custom `User` (`AUTH_USER_MODEL = "accounts.User"`): no `username`, email is the login field and is lowercased on save, so the unique index is case-insensitive. URLs: `/accounts/signup/`, `/accounts/login/`, `/accounts/logout/` (POST only).
 - `config/` — settings (single env-driven file), urls. `config/apps.py` holds ObjectId-based AppConfigs for contrib apps.
 - `apps/geo/` — reusable geo foundation, no models:
   - `forms.py` validates request coordinates at the boundary (`NearbyQueryForm`: lat/lng/radius ≤ 50 km; `BBoxForm`: `west,south,east,north`, span ≤ 5°).
@@ -35,6 +37,7 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 ## MongoDB backend gotchas
 
 - Primary keys are `ObjectIdAutoField`. Any contrib/third-party app with models needs an ObjectId AppConfig in `config/apps.py` and its migrations generated into `mongo_migrations/<app>/` (registered in `MIGRATION_MODULES`).
+- Swapping `AUTH_USER_MODEL` or reordering migrations under an already-migrated DB raises `InconsistentMigrationHistory`. Locally, reset with `docker compose down --volumes`, then `migrate`. In production, a human drops the Atlas database before the merge deploys.
 - Spatial fields: SRID 4326 only, stored as GeoJSON with an automatic `2dsphere` index. Supported lookups: `within`, `intersects`, `contains`, `disjoint`, `distance_lte/gt` (accepts `D(km=…)`), `dwithin` (degrees only). No GIS DB functions (`Distance()` etc.) — use `apps.geo.queries.nearest` for distance-sorted results; the model needs `objects = MongoManager()`.
 - Coordinate order: GEOS/GeoJSON `(lng, lat)`; Leaflet `[lat, lng]`. Conversion happens only in `apps/geo/forms.py` and `static/js/map.js`.
 - Django's admin OSM map widget loads OpenLayers from a CDN that the CSP blocks, so `PlaceAdmin` uses plain lat/lng form fields.

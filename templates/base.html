@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static i18n %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -16,7 +16,25 @@
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="site-header">
-    <a href="{% url 'places:map' %}" class="brand">entr community</a>
+    <a href="{% url 'places:map' %}" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      </span>
+      <span class="brand-name">entr community</span>
+    </a>
+    <nav class="site-nav" aria-label="{% translate 'Account' %}">
+      {% if user.is_authenticated %}
+        <span class="nav-user">{{ user.first_name|default:user.email }}</span>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="nav-link">{% translate "Log out" %}</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:signup' %}" class="nav-link nav-secondary">{% translate "List your business" %}</a>
+        <a href="{% url 'accounts:login' %}" class="nav-link">{% translate "Log in" %}</a>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-dark">{% translate "Sign up" %}</a>
+      {% endif %}
+    </nav>
   </header>
   <main>{% block content %}{% endblock %}</main>
 </body>
