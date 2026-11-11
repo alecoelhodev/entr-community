@@ -50,7 +50,7 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 
 ## Deployment
 
-`.github/workflows/deploy-cloudrun.yml`: on push to `main`, run the tests, then build, push to Artifact Registry, `migrate` against Atlas from the new image, deploy to Cloud Run and smoke-test. Project-specific values come from GitHub repo variables, and secrets from Secret Manager. A new required env var must be added to the workflow's `env_vars`/`secrets`. Setup, gotchas and rollback are in `docs/deployment.md`.
+`.github/workflows/deploy-cloudrun.yml`: on pull requests to `main`, run the migrations check and tests only; on push to `main`, also build, push to Artifact Registry, `migrate` against Atlas from the new image, deploy to Cloud Run and smoke-test. Project-specific values come from GitHub repo variables, and secrets from Secret Manager. A new required env var must be added to the workflow's `env_vars`/`secrets`. Setup, gotchas and rollback are in `docs/deployment.md`.
 
 ## Config
 

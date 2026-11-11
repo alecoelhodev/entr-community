@@ -1,5 +1,5 @@
 # Tests, then builds the image, pushes it to Artifact Registry, runs migrations
-# and deploys to Cloud Run on every push to main.
+# and deploys to Cloud Run on every push to main. Pull requests run tests only.
 # One-time GCP / Atlas / repo-variable setup: docs/deployment.md.
 
 name: 'Build and Deploy to Cloud Run'
@@ -8,11 +8,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
+# Deploys queue in one group and never cancel; each PR gets its own group so it
+# doesn't wait behind deploys, and a new push cancels its stale run.
 concurrency:
-  group: deploy-cloudrun
-  cancel-in-progress: false
+  group: "${{ github.event_name == 'pull_request' && format('pr-{0}', github.ref) || 'deploy-cloudrun' }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   PROJECT_ID: '${{ vars.GCP_PROJECT_ID }}'
@@ -35,10 +40,11 @@ jobs:
 
       # compose.yaml's mongo healthcheck initiates the rs0 replica set; `run`
       # waits for it via depends_on: service_healthy.
-      - name: 'Run tests'
+      - name: 'Check migrations and run tests'
         run: |-
           docker compose build web
-          docker compose run --rm web python manage.py test
+          docker compose run --rm web sh -c \
+            "python manage.py makemigrations --check --dry-run && python manage.py test"
 
       - name: 'Service logs'
         if: failure()
@@ -50,6 +56,8 @@ jobs:
 
   deploy:
     needs: test
+    # Never for pull requests (including forks): this job holds GCP credentials.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: 'ubuntu-latest'
 
     permissions:
