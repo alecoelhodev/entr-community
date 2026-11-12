@@ -317,18 +317,6 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -0.01em; }
   .site-header .btn { padding: 0 12px; }
 }
 
-/* Map (places example at /places/; removed in T09) */
-.map-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(100dvh - var(--header-h)); }
-.map { height: 100%; }
-.sidebar { padding: 1rem; overflow-y: auto; background: var(--surface); border-left: 1px solid var(--line); }
-.sidebar h2 { font-size: 1rem; }
-.radius { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
-.nearby-list { padding-left: 1.25rem; }
-.nearby-list li { margin-bottom: 0.4rem; }
-.nearby-list span, .hint { color: #59636e; }
-.status { color: #b42318; }
-
-@media (max-width: 720px) {
-  .map-layout { grid-template-columns: 1fr; grid-template-rows: 60dvh auto; height: auto; }
-  .sidebar { border-left: 0; border-top: 1px solid #d0d7de; }
-}
+/* Shared text styles */
+.hint { color: var(--muted); }
+.status { color: var(--danger); }

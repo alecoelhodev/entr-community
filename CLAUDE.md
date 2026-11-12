@@ -11,10 +11,10 @@ Django 6.1 server-rendered templates + HTMX + Alpine.js (CSP build) + Leaflet/OS
 ```sh
 docker compose up --build -d                              # mongo (single-node replica set rs0) + web (runserver)
 docker compose exec web python manage.py migrate
-docker compose exec web python manage.py seed_places      # Lisbon sample data, idempotent
+docker compose exec web python manage.py seed_directory   # fictional Doral demo businesses, idempotent
 docker compose exec web python manage.py createsuperuser  # prompts for email (no username)
 docker compose exec web python manage.py test             # all tests (uses a real Mongo test DB)
-docker compose exec web python manage.py test apps.geo.tests.test_queries.GeoQueryTests.test_nearest_limit   # single test
+docker compose exec web python manage.py test apps.directory.tests.test_api.BusinessGeoJSONTests.test_geojson_search_matches_offering   # single test
 docker compose exec web python manage.py makemigrations <app>
 docker compose exec web uv lock                           # after editing pyproject.toml; then rebuild
 ```
@@ -40,7 +40,6 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
   - Vendor pages (login required): `/me/businesses/`, `/me/businesses/new/`, `/me/businesses/<slug>/edit/`. `BusinessForm` + `OfferingFormSet` (≤ 10 rows, blank names ignored, ≥ 1 required). Edits are scoped with `owner=request.user` (others get 404); the view, not the form, moves `rejected` → `pending`. Location picker: `static/js/location-picker.js` (`Alpine.data("locationPicker")`), loaded only on the form page.
 - Reviews: `Review` (one per author per business). POST-only `/b/<slug>/reviews/`, `…/reviews/mine/`, `…/reviews/mine/delete/`. **Only `apps/directory/ratings.py` changes `rating_sum`/`rating_count`**, via atomic `F()` deltas. The view, the admin hide/unhide actions and a `post_delete` signal (which covers cascades) call it. `Business.save()` never writes the rating fields on update, so a stale instance can't clobber them.
 - `templates/_field.html` renders one form field (label, widget, help, errors) for the account and listing forms.
-- `apps/places/` — the starter's example app, now at `/places/` (JS: `static/js/places-map.js`). T09 removes it.
 - Front end: `/` is `templates/directory/map.html` with `static/js/map.js` (`Alpine.data("directoryMap")`).
   - URLs, tile URL, center and zoom come from `data-*` attributes. The panel URL is a template (`/b/__slug__/panel/`); JS substitutes `encodeURIComponent(slug)`.
   - Category and search (`x-model`, 300 ms debounce on `q`) reload the markers on debounced `moveend` (`AbortController` cancels stale fetches) and the nearby list via `htmx.ajax` into `#nearby`. Nearby starts at the default center; a map click moves it.

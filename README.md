@@ -1,5 +1,7 @@
 # entr community
 
+A map of local businesses in Doral, FL: find who sells golfeados, prints t-shirts or teaches guitar nearby, and list your own business. Product specs and the task plan are in [specs/](specs/README.md).
+
 Django 6.1 + HTMX + Alpine.js (CSP build) + MongoDB 8 (official `django-mongodb-backend` with GeoDjango) + Leaflet/OpenStreetMap.
 
 ## Run
@@ -7,7 +9,7 @@ Django 6.1 + HTMX + Alpine.js (CSP build) + MongoDB 8 (official `django-mongodb-
 ```sh
 docker compose up --build -d
 docker compose exec web python manage.py migrate
-docker compose exec web python manage.py seed_places      # Lisbon sample data
+docker compose exec web python manage.py seed_directory   # fictional Doral, FL demo businesses
 docker compose exec web python manage.py createsuperuser
 ```
 

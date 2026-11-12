@@ -141,7 +141,7 @@ jobs:
           # The public host, not steps.deploy.outputs.url (which may be the
           # legacy *.a.run.app URL that ALLOWED_HOSTS doesn't list).
           URL="https://${{ vars.CLOUD_RUN_HOST }}"
-          for path in "/" "/places.geojson?bbox=-9.2,38.6,-9.0,38.8"; do
+          for path in "/" "/businesses.geojson?bbox=-80.40,25.78,-80.30,25.86"; do
             echo "Checking ${URL}${path}"
             curl --fail --silent --show-error --output /dev/null \
               --retry 5 --retry-delay 3 --retry-all-errors \

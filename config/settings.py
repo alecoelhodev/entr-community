@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     "django_htmx",
     "apps.accounts",
     "apps.geo",
-    "apps.places",
     "apps.directory",
 ]
 
