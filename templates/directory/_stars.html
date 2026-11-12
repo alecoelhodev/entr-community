@@ -1,0 +1,1 @@
+{% load i18n %}<span class="stars" role="img" aria-label="{% blocktranslate %}{{ rating }} out of 5 stars{% endblocktranslate %}">{% for i in "12345" %}{% if forloop.counter <= rating %}★{% else %}☆{% endif %}{% endfor %}</span>

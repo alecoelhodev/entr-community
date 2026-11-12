@@ -100,6 +100,8 @@
     </aside>
   {% endif %}
 
+  {% if not in_panel %}{% include "directory/_reviews.html" %}{% endif %}
+
   {% if in_panel %}
     <a href="{% url 'directory:detail' business.slug %}" class="btn btn-secondary biz-full-link">{% translate "See reviews & full page" %}</a>
   {% endif %}

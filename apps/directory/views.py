@@ -1,17 +1,21 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_http_methods, require_safe
+from django.views.decorators.http import require_http_methods, require_POST, require_safe
+from django_mongodb_backend.transaction import atomic
 
 from apps.geo.forms import BBoxForm, NearbyQueryForm
 from apps.geo.geojson import feature_collection
 from apps.geo.queries import in_bbox, nearest
 
-from .forms import BusinessFilterForm, BusinessForm, OfferingFormSet
-from .models import Business, Category
+from .forms import BusinessFilterForm, BusinessForm, OfferingFormSet, ReviewForm
+from .models import Business, Category, Review
+from .ratings import apply_rating_delta
 
 MAX_MAP_FEATURES = 500
 MAX_NEARBY_RESULTS = 50
@@ -102,9 +106,33 @@ def get_visible_business(request, slug):
     return business
 
 
+MAX_LISTED_REVIEWS = 20
+
+
+def _render_detail(request, business, review_form=None, edit_form=None, status=200):
+    own_review = None
+    if request.user.is_authenticated:
+        own_review = Review.objects.filter(business=business, author=request.user).first()
+    can_review = (
+        request.user.is_authenticated
+        and not business.viewer_is_owner
+        and business.status == Business.Status.APPROVED
+        and own_review is None
+    )
+    context = {
+        "business": business,
+        "reviews": business.reviews.filter(is_hidden=False).select_related("author")[:MAX_LISTED_REVIEWS],
+        "own_review": own_review,
+        "can_review": can_review,
+        "review_form": review_form or (ReviewForm() if can_review else None),
+        "edit_form": edit_form or (ReviewForm(instance=own_review) if own_review else None),
+    }
+    return render(request, "directory/detail.html", context, status=status)
+
+
 @require_safe
 def business_detail(request, slug):
-    return render(request, "directory/detail.html", {"business": get_visible_business(request, slug)})
+    return _render_detail(request, get_visible_business(request, slug))
 
 
 @require_safe
@@ -174,3 +202,63 @@ def _edit_business(request, business):
             "default_center": settings.MAP_DEFAULT_CENTER,
         },
     )
+
+
+def _reviewable_business(request, slug):
+    """Approved business the current user may review: 404 otherwise, 403 for its owner."""
+    business = get_object_or_404(Business.objects.approved().select_related("category"), slug=slug)
+    business.viewer_is_owner = business.owner_id == request.user.pk
+    if business.viewer_is_owner:
+        raise PermissionDenied
+    return business
+
+
+@login_required
+@require_POST
+def review_create(request, slug):
+    business = _reviewable_business(request, slug)
+    form = ReviewForm(request.POST, instance=Review(business=business, author=request.user))
+    if Review.objects.filter(business=business, author=request.user).exists():
+        form.add_error(None, _("You already reviewed this business."))
+    elif form.is_valid():
+        try:
+            with atomic():
+                review = form.save()
+                apply_rating_delta(business.pk, review.rating, 1)
+        except IntegrityError:
+            # Lost a race with a concurrent submit; the unique index held.
+            form.add_error(None, _("You already reviewed this business."))
+        else:
+            messages.success(request, _("Thanks! Your review is posted."))
+            return redirect("directory:detail", slug=business.slug)
+    return _render_detail(request, business, review_form=form, status=400)
+
+
+@login_required
+@require_POST
+def review_update(request, slug):
+    business = _reviewable_business(request, slug)
+    # Read the old rating in the same transaction as the write, so a concurrent hide can't skew the delta.
+    with atomic():
+        review = get_object_or_404(Review, business=business, author=request.user)
+        old_rating = review.rating
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            review = form.save()
+            if not review.is_hidden:
+                apply_rating_delta(business.pk, review.rating - old_rating, 0)
+    if not form.is_valid():
+        return _render_detail(request, business, edit_form=form, status=400)
+    messages.success(request, _("Your review was updated."))
+    return redirect("directory:detail", slug=business.slug)
+
+
+@login_required
+@require_POST
+def review_delete(request, slug):
+    business = _reviewable_business(request, slug)
+    review = get_object_or_404(Review, business=business, author=request.user)
+    with atomic():
+        review.delete()  # The post_delete signal adjusts the aggregate.
+    messages.success(request, _("Your review was deleted."))
+    return redirect("directory:detail", slug=business.slug)
