@@ -1,6 +1,6 @@
 # T09: Cutover: remove `places`, Doral seed data
 
-**Status:** blocked
+**Status:** in progress
 **Depends on:** T05, T07, T08
 **User stories:** US-1 (demo data)
 
