@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.geo.forms import LatLngFieldsMixin
 
-from .models import Business, Category, Offering
+from .models import Business, Category, Offering, Review
 from .search import query_terms
 
 
@@ -129,3 +129,22 @@ OfferingFormSet = forms.formset_factory(
     absolute_max=MAX_OFFERINGS,
     validate_max=True,
 )
+
+
+class ReviewForm(forms.ModelForm):
+    rating = forms.TypedChoiceField(
+        label=_("Your rating"),
+        choices=[(n, f"{n} ★") for n in range(1, 6)],
+        coerce=int,
+        widget=forms.RadioSelect,
+    )
+
+    class Meta:
+        model = Review
+        fields = ["rating", "text"]
+        labels = {"text": _("Your review (optional)")}
+        widgets = {
+            "text": forms.Textarea(
+                attrs={"rows": 5, "maxlength": 2000, "placeholder": _("What did you buy? How was it?")}
+            )
+        }

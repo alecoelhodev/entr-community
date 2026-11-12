@@ -1,0 +1,10 @@
+{% load i18n %}
+{% for error in form.non_field_errors %}<p class="form-error" role="alert">{{ error }}</p>{% endfor %}
+<fieldset class="rating-field{% if form.rating.errors %} field-invalid{% endif %}">
+  <legend>{{ form.rating.label }}</legend>
+  <div class="rating-options">
+    {% for radio in form.rating %}<label class="rating-option">{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}
+  </div>
+  {% for error in form.rating.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+</fieldset>
+{% with field=form.text %}{% include "_field.html" %}{% endwith %}

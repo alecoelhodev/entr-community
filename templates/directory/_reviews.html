@@ -1,0 +1,61 @@
+{% load i18n %}
+<section class="reviews card" aria-labelledby="reviews-title">
+  <div class="reviews-list">
+    <div class="reviews-head">
+      <h2 id="reviews-title">{% translate "Reviews" %}</h2>
+      {% if business.rating_count %}
+        <span class="reviews-summary">{% blocktranslate with avg=business.rating_avg|floatformat:1 count n=business.rating_count %}{{ avg }} average · {{ n }} review{% plural %}{{ avg }} average · {{ n }} reviews{% endblocktranslate %}</span>
+      {% endif %}
+    </div>
+    <ul>
+      {% for review in reviews %}
+        <li class="review">
+          <span class="review-head">
+            <strong>{{ review.author_name }}</strong>
+            <span class="review-date">{{ review.created_at|date:"M Y" }}</span>
+          </span>
+          {% include "directory/_stars.html" with rating=review.rating %}
+          {% if review.text %}<p>{{ review.text|linebreaksbr }}</p>{% endif %}
+        </li>
+      {% empty %}
+        <li class="hint">{% translate "Be the first to share your experience." %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="review-side">
+    {% if own_review and review_form %}
+      {% for error in review_form.non_field_errors %}<p class="form-error" role="alert">{{ error }}</p>{% endfor %}
+    {% endif %}
+    {% if own_review %}
+      <div class="own-review">
+        <h3>{% translate "Your review" %}</h3>
+        {% if own_review.is_hidden %}<p class="field-help">{% translate "A moderator hid this review, so it isn't shown or counted." %}</p>{% endif %}
+        {% include "directory/_stars.html" with rating=own_review.rating %}
+        {% if own_review.text %}<p>{{ own_review.text|linebreaksbr }}</p>{% endif %}
+        <details class="edit-review"{% if edit_form.errors %} open{% endif %}>
+          <summary>{% translate "Edit your review" %}</summary>
+          <form method="post" action="{% url 'directory:review_update' business.slug %}" class="review-form" novalidate>
+            {% csrf_token %}
+            {% include "directory/_review_fields.html" with form=edit_form %}
+            <button type="submit" class="btn btn-primary">{% translate "Save review" %}</button>
+          </form>
+        </details>
+        <form method="post" action="{% url 'directory:review_delete' business.slug %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary">{% translate "Delete review" %}</button>
+        </form>
+      </div>
+    {% elif can_review %}
+      <form method="post" action="{% url 'directory:review_create' business.slug %}" class="review-form" aria-labelledby="write-title" novalidate>
+        {% csrf_token %}
+        <h3 id="write-title">{% translate "Write a review" %}</h3>
+        {% include "directory/_review_fields.html" with form=review_form %}
+        <button type="submit" class="btn btn-primary">{% translate "Post review" %}</button>
+        <p class="field-help">{% translate "One review per business. You can edit or delete it later." %}</p>
+      </form>
+    {% elif not user.is_authenticated %}
+      <p class="review-login"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">{% translate "Log in to write a review" %}</a></p>
+    {% endif %}
+  </div>
+</section>

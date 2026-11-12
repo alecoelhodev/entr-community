@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.contrib.gis.db import models
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -91,10 +91,18 @@ class Business(models.Model):
     def __str__(self):
         return self.name
 
+    # Changed only through atomic deltas (apps.directory.ratings), never by save().
+    RATING_FIELDS = ("rating_sum", "rating_count")
+
     def save(self, *args, **kwargs):
         if self._state.adding and not self.slug:
             self.slug = self._unique_slug()
         self.search_terms = normalize_terms(self._searchable_text())
+        if not self._state.adding and kwargs.get("update_fields") is None:
+            # A stale in-memory instance must not overwrite concurrent rating updates.
+            kwargs["update_fields"] = [
+                f.name for f in self._meta.concrete_fields if not f.primary_key and f.name not in self.RATING_FIELDS
+            ]
         super().save(*args, **kwargs)
 
     def _searchable_text(self) -> str:
@@ -135,3 +143,25 @@ class Business(models.Model):
         if not self.rating_count:
             return None
         return round(self.rating_sum / self.rating_count, 1)
+
+
+class Review(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="reviews")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews")
+    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    text = models.TextField(max_length=2000, blank=True)
+    is_hidden = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [models.UniqueConstraint(fields=["business", "author"], name="one_review_per_author")]
+
+    def __str__(self):
+        return f"{self.rating}★ for {self.business_id}"
+
+    @property
+    def author_name(self) -> str:
+        # Never the email: it's private (product.md).
+        return self.author.first_name or _("Anonymous")

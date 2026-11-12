@@ -1,6 +1,6 @@
 # T08: Reviews and rating aggregate
 
-**Status:** ready
+**Status:** in progress
 **Depends on:** T01, T06
 **User stories:** US-11, US-12
 
