@@ -1,6 +1,6 @@
 # T05: Map UI: filters, search, detail panel
 
-**Status:** blocked
+**Status:** ready
 **Depends on:** T04, T06
 **User stories:** US-1, US-2, US-3, US-4
 

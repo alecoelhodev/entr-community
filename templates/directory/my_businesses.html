@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "My businesses" %} · entr community{% endblock %}
+{% block content %}
+<div class="content-page narrow">
+  <div class="page-head">
+    <div>
+      <h1>{% translate "My businesses" %}</h1>
+      <p class="page-lead">{% translate "New listings appear on the map after a moderator approves them." %}</p>
+    </div>
+    <a href="{% url 'directory:business_create' %}" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      {% translate "New listing" %}
+    </a>
+  </div>
+  <ul class="listing-list">
+    {% for business in businesses %}
+      <li class="card listing-card">
+        <div class="listing-row">
+          <div class="listing-info">
+            <div class="listing-title">
+              <h2>{{ business.name }}</h2>
+              {% include "directory/_status_badge.html" %}
+            </div>
+            <p class="listing-meta">
+              {{ business.category.name }} ·
+              {% blocktranslate count n=business.offerings|length %}{{ n }} service{% plural %}{{ n }} services{% endblocktranslate %}
+              {% if business.status == "approved" %}
+                · {% if business.rating_count %}{% blocktranslate with avg=business.rating_avg count n=business.rating_count %}{{ avg }} ★ from {{ n }} review{% plural %}{{ avg }} ★ from {{ n }} reviews{% endblocktranslate %}{% else %}{% translate "No reviews yet" %}{% endif %}
+              {% elif business.status == "pending" %}
+                · {% translate "Only you can see this listing until it’s approved." %}
+              {% endif %}
+            </p>
+          </div>
+          <div class="listing-actions">
+            <a href="{% url 'directory:detail' business.slug %}" class="btn btn-secondary">{% translate "View" %}</a>
+            <a href="{% url 'directory:business_edit' business.slug %}" class="btn btn-secondary">{% if business.status == "rejected" %}{% translate "Edit and resubmit" %}{% else %}{% translate "Edit" %}{% endif %}</a>
+          </div>
+        </div>
+        {% if business.status == "rejected" and business.rejection_reason %}
+          <div class="moderator-note" role="note">
+            <p><strong>{% translate "Moderator note:" %}</strong> {{ business.rejection_reason|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li class="card empty-state">
+        <p>{% translate "You haven’t listed a business yet." %}</p>
+        <a href="{% url 'directory:business_create' %}">{% translate "Create your first listing" %}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
