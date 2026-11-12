@@ -1,6 +1,6 @@
 # T07: Vendor dashboard: create and edit listings
 
-**Status:** in progress
+**Status:** done
 **Depends on:** T01, T02
 **User stories:** US-7, US-8, US-9
 

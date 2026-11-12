@@ -5,14 +5,14 @@
   <p class="status">{% translate "Invalid filters. Pick a category from the list and keep the search under 100 characters." %}</p>
 {% else %}
   <div class="results-head">
-    <h2>{% blocktranslate with radius=radius_km|floatformat:"-1" %}Within {{ radius }} km{% endblocktranslate %}</h2>
+    <h2>{% if q %}{% blocktranslate with radius=radius_km|floatformat:"-1" %}“{{ q }}” within {{ radius }} km{% endblocktranslate %}{% else %}{% blocktranslate with radius=radius_km|floatformat:"-1" %}Within {{ radius }} km{% endblocktranslate %}{% endif %}</h2>
     <span class="results-count">{% blocktranslate count n=businesses|length %}{{ n }} result{% plural %}{{ n }} results{% endblocktranslate %}</span>
   </div>
   <ol class="results">
     {% for business in businesses %}
       <li class="result-card" data-slug="{{ business.slug }}">
         <span class="result-top">
-          <a class="result-name" href="{% url 'directory:detail' business.slug %}">{{ business.name }}</a>
+          <a class="result-name" href="{% url 'directory:detail' business.slug %}" data-slug="{{ business.slug }}" @click.prevent="openFromCard">{{ business.name }}</a>
           <span class="result-distance">{% if business.distance_m < 1000 %}{{ business.distance_m|floatformat:0 }} m{% else %}{{ business.distance_km|floatformat:1 }} km{% endif %}</span>
         </span>
         <span class="result-meta">
