@@ -17,6 +17,22 @@ MAX_MAP_FEATURES = 500
 MAX_NEARBY_RESULTS = 50
 
 
+@require_safe
+def map_page(request):
+    lat, lng = settings.MAP_DEFAULT_CENTER
+    return render(
+        request,
+        "directory/map.html",
+        {
+            "tile_url": settings.MAP_TILE_URL,
+            "center_lat": lat,
+            "center_lng": lng,
+            "zoom": settings.MAP_DEFAULT_ZOOM,
+            "categories": Category.objects.all(),
+        },
+    )
+
+
 def _feature_properties(business):
     # Public fields only: this goes straight to the browser.
     return {
@@ -68,7 +84,11 @@ def businesses_nearby(request):
     return render(
         request,
         "directory/_nearby_list.html",
-        {"businesses": businesses, "radius_km": location.cleaned_data["radius_km"]},
+        {
+            "businesses": businesses,
+            "radius_km": location.cleaned_data["radius_km"],
+            "q": filters.cleaned_data["q"].strip(),
+        },
     )
 
 

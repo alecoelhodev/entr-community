@@ -5,6 +5,7 @@ from . import views
 app_name = "directory"
 
 urlpatterns = [
+    path("", views.map_page, name="map"),
     path("businesses.geojson", views.businesses_geojson, name="geojson"),
     path("businesses/nearby/", views.businesses_nearby, name="nearby"),
     path("b/<slug:slug>/", views.business_detail, name="detail"),

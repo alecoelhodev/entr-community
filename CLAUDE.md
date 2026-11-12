@@ -39,8 +39,13 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
   - Detail: `/b/<slug>/` (page) and `/b/<slug>/panel/` (HTMX partial) share `templates/directory/_detail_body.html`. `get_visible_business()` is the single visibility rule: approved for everyone, any status for the owner and staff, else 404. Render vendor URLs through `Business.website_url` (http/https only), never `website` directly.
   - Vendor pages (login required): `/me/businesses/`, `/me/businesses/new/`, `/me/businesses/<slug>/edit/`. `BusinessForm` + `OfferingFormSet` (≤ 10 rows, blank names ignored, ≥ 1 required). Edits are scoped with `owner=request.user` (others get 404); the view, not the form, moves `rejected` → `pending`. Location picker: `static/js/location-picker.js` (`Alpine.data("locationPicker")`), loaded only on the form page.
 - `templates/_field.html` renders one form field (label, widget, help, errors) for the account and listing forms.
-- `apps/places/` — example domain app using the foundation. Views: map page, bbox → GeoJSON (capped at 500), nearby → HTMX partial (capped at 50). Invalid input returns 400 with form errors only.
-- Front end: `static/js/map.js` registers `Alpine.data("placesMap")`; Leaflet fetches GeoJSON on debounced `moveend`, map click calls `htmx.ajax` to swap the nearby partial. URLs and tile URL are passed via `data-*` attributes from `templates/places/map.html`.
+- `apps/places/` — the starter's example app, now at `/places/` (JS: `static/js/places-map.js`). T09 removes it.
+- Front end: `/` is `templates/directory/map.html` with `static/js/map.js` (`Alpine.data("directoryMap")`).
+  - URLs, tile URL, center and zoom come from `data-*` attributes. The panel URL is a template (`/b/__slug__/panel/`); JS substitutes `encodeURIComponent(slug)`.
+  - Category and search (`x-model`, 300 ms debounce on `q`) reload the markers on debounced `moveend` (`AbortController` cancels stale fetches) and the nearby list via `htmx.ajax` into `#nearby`. Nearby starts at the default center; a map click moves it.
+  - Marker or result-card clicks load the panel into `#detail`. The panel's close buttons call `closePanel` (Alpine binds them after the swap, inside the component's scope).
+  - Tooltips are built with DOM text nodes, never HTML strings: Leaflet sets string tooltips as `innerHTML`.
+  - Below 900 px the sidebar uses `display: contents`, so filters, map and results stack, and the panel becomes a fixed bottom sheet.
 
 ## MongoDB backend gotchas
 

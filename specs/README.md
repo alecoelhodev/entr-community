@@ -13,9 +13,9 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 | [T02](tasks/T02-directory-models.md) | Directory models + moderation admin | T01, T03 | done |
 | [T03](tasks/T03-search-terms.md) | Search term normalization | — | done |
 | [T04](tasks/T04-map-api.md) | Public map API (GeoJSON + nearby, filters) | T02 | done |
-| [T05](tasks/T05-map-ui.md) | Map UI: filters, search, detail panel | T04, T06 | ready |
+| [T05](tasks/T05-map-ui.md) | Map UI: filters, search, detail panel | T04, T06 | in progress |
 | [T06](tasks/T06-business-detail.md) | Business detail page + panel | T02 | done |
-| [T07](tasks/T07-vendor-dashboard.md) | Vendor dashboard: create/edit listings | T01, T02 | in progress |
+| [T07](tasks/T07-vendor-dashboard.md) | Vendor dashboard: create/edit listings | T01, T02 | done |
 | [T08](tasks/T08-reviews.md) | Reviews and rating aggregate | T01, T06 | ready |
 | [T09](tasks/T09-cutover.md) | Cutover: remove `places`, Doral seed data | T05, T07, T08 | blocked |
 
