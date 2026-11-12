@@ -37,6 +37,8 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
   - `admin.py`: approve and reject actions.
   - Public API: `/businesses.geojson?bbox=&category=&q=` (approved only, capped at 500) and `/businesses/nearby/?lat&lng&radius_km&category&q` (HTMX partial, capped at 50). Both validate filters with `BusinessFilterForm`; `q` must match **all** normalized terms. `raw_aggregate` results can't `select_related`, so resolve FKs with one `in_bulk` query.
   - Detail: `/b/<slug>/` (page) and `/b/<slug>/panel/` (HTMX partial) share `templates/directory/_detail_body.html`. `get_visible_business()` is the single visibility rule: approved for everyone, any status for the owner and staff, else 404. Render vendor URLs through `Business.website_url` (http/https only), never `website` directly.
+  - Vendor pages (login required): `/me/businesses/`, `/me/businesses/new/`, `/me/businesses/<slug>/edit/`. `BusinessForm` + `OfferingFormSet` (≤ 10 rows, blank names ignored, ≥ 1 required). Edits are scoped with `owner=request.user` (others get 404); the view, not the form, moves `rejected` → `pending`. Location picker: `static/js/location-picker.js` (`Alpine.data("locationPicker")`), loaded only on the form page.
+- `templates/_field.html` renders one form field (label, widget, help, errors) for the account and listing forms.
 - `apps/places/` — example domain app using the foundation. Views: map page, bbox → GeoJSON (capped at 500), nearby → HTMX partial (capped at 50). Invalid input returns 400 with form errors only.
 - Front end: `static/js/map.js` registers `Alpine.data("placesMap")`; Leaflet fetches GeoJSON on debounced `moveend`, map click calls `htmx.ajax` to swap the nearby partial. URLs and tile URL are passed via `data-*` attributes from `templates/places/map.html`.
 
@@ -63,4 +65,4 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 
 ## Config
 
-Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. The public OSM tile server is for light use only; switch `MAP_TILE_URL` before production traffic.
+Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. Map default center/zoom are settings constants (`MAP_DEFAULT_CENTER`, Doral FL; `MAP_DEFAULT_ZOOM`), not env vars. The public OSM tile server is for light use only; switch `MAP_TILE_URL` before production traffic.

@@ -1,0 +1,1 @@
+{% load i18n %}<span class="status-badge status-{{ business.status }}"><span class="status-dot" aria-hidden="true"></span>{% if business.status == "approved" %}{% translate "Approved · live on the map" %}{% else %}{{ business.get_status_display }}{% endif %}</span>

@@ -115,6 +115,9 @@ STORAGES = {
 # Map tiles. OSM's public tile servers are for light use only; point this at a
 # commercial or self-hosted tile server before production traffic.
 MAP_TILE_URL = os.environ.get("MAP_TILE_URL", "https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+# Doral, FL. User geolocation is a post-MVP feature.
+MAP_DEFAULT_CENTER = (25.8195, -80.3553)
+MAP_DEFAULT_ZOOM = 13
 _tile_origin = "/".join(MAP_TILE_URL.split("/")[:3]).replace("{s}.", "*.")
 
 SECURE_CSP = {

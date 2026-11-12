@@ -1,6 +1,6 @@
 # T06: Business detail page + panel
 
-**Status:** in progress
+**Status:** done
 **Depends on:** T02
 **User stories:** US-4
 

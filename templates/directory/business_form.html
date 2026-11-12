@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% if is_new %}{% translate "New listing" %}{% else %}{% blocktranslate with name=business.name %}Edit {{ name }}{% endblocktranslate %}{% endif %} · entr community{% endblock %}
+{% block scripts %}<script src="{% static 'js/location-picker.js' %}" defer></script>{% endblock %}
+{% block content %}
+<div class="content-page narrow">
+  <a href="{% url 'directory:my_businesses' %}" class="back-link">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    {% translate "My businesses" %}
+  </a>
+  <h1>{% if is_new %}{% translate "New listing" %}{% else %}{% blocktranslate with name=business.name %}Edit {{ name }}{% endblocktranslate %}{% endif %}</h1>
+  <p class="page-lead">{% translate "Tell neighbors what you offer. Your listing goes live after a moderator approves it." %}</p>
+  {% if not is_new %}<p>{% include "directory/_status_badge.html" %}</p>{% endif %}
+  {% if business.status == "rejected" and business.rejection_reason %}
+    <div class="moderator-note moderator-note-rejected" role="note">
+      <p><strong>{% translate "Moderator note:" %}</strong> {{ business.rejection_reason|linebreaksbr }}</p>
+    </div>
+  {% endif %}
+
+  <form method="post" class="listing-form" novalidate>
+    {% csrf_token %}
+    {% if form.errors or offerings.total_error_count %}
+      <p class="form-error" role="alert">{% translate "Please fix the highlighted fields." %}</p>
+    {% endif %}
+    {% for error in form.non_field_errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+
+    <fieldset class="card form-section">
+      <legend>{% translate "About your business" %}</legend>
+      <div class="field-row">
+        {% with field=form.name %}{% include "_field.html" %}{% endwith %}
+        {% with field=form.category %}{% include "_field.html" %}{% endwith %}
+      </div>
+      {% with field=form.description %}{% include "_field.html" %}{% endwith %}
+      {% with field=form.started_on %}{% include "_field.html" %}{% endwith %}
+      <label class="check-field" for="{{ form.offers_delivery.id_for_label }}">
+        {{ form.offers_delivery }}
+        <span>
+          <span class="check-label">{{ form.offers_delivery.label }}</span>
+          <span class="field-help">{{ form.offers_delivery.help_text }}</span>
+        </span>
+      </label>
+    </fieldset>
+
+    <fieldset class="card form-section" x-data="locationPicker"
+              data-tile-url="{{ tile_url }}"
+              data-default-lat="{{ default_center.0|stringformat:'s' }}"
+              data-default-lng="{{ default_center.1|stringformat:'s' }}">
+      <legend>{% translate "Location" %}</legend>
+      <p class="field-help">{% translate "Click the map where customers can find you. Drag to move around." %}</p>
+      <div class="picker-map" x-ref="map" role="application" aria-label="{% translate 'Location picker map' %}"></div>
+      <p class="picker-label" x-text="label" aria-live="polite"></p>
+      {% for error in form.lat.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      {% if not form.lat.errors %}{% for error in form.lng.errors %}<p class="field-error">{{ error }}</p>{% endfor %}{% endif %}
+      <details class="coords"{% if form.lat.errors or form.lng.errors %} open{% endif %}>
+        <summary>{% translate "Enter coordinates instead" %}</summary>
+        <div class="field-row">
+          <div class="field"><label for="{{ form.lat.id_for_label }}">{{ form.lat.label }}</label>{{ form.lat }}</div>
+          <div class="field"><label for="{{ form.lng.id_for_label }}">{{ form.lng.label }}</label>{{ form.lng }}</div>
+        </div>
+      </details>
+      {% with field=form.address %}{% include "_field.html" %}{% endwith %}
+    </fieldset>
+
+    <fieldset class="card form-section">
+      <legend>{% translate "Contact (optional, shown publicly)" %}</legend>
+      <div class="field-row">
+        {% with field=form.phone %}{% include "_field.html" %}{% endwith %}
+        {% with field=form.website %}{% include "_field.html" %}{% endwith %}
+      </div>
+      <div class="field{% if form.instagram.errors %} field-invalid{% endif %}">
+        <label for="{{ form.instagram.id_for_label }}">Instagram</label>
+        <span class="input-prefix"><span aria-hidden="true">@</span>{{ form.instagram }}</span>
+        <span class="field-help">{{ form.instagram.help_text }}</span>
+        {% for error in form.instagram.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="card form-section">
+      <legend>{% translate "Services & prices" %}</legend>
+      <p class="field-help">{% translate "These words power search. Add at least one, up to 10. Leave the price empty to show “Ask for price”." %}</p>
+      {{ offerings.management_form }}
+      {% for error in offerings.non_form_errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+      {% for row in offerings %}
+        <div class="offering-row" role="group" aria-label="{% blocktranslate with n=forloop.counter %}Service {{ n }}{% endblocktranslate %}">
+          {% for field in row %}{% include "_field.html" %}{% endfor %}
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <div class="form-actions">
+      {% if is_new or business.status != "approved" %}
+        <p class="field-help">{% blocktranslate %}After you submit, the listing shows as <strong>Pending review</strong> in My businesses.{% endblocktranslate %}</p>
+      {% else %}
+        <p class="field-help">{% translate "Changes go live as soon as you save." %}</p>
+      {% endif %}
+      <div class="form-buttons">
+        <a href="{% url 'directory:my_businesses' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+        <button type="submit" class="btn btn-primary">{% if is_new or business.status == "rejected" %}{% translate "Submit for review" %}{% else %}{% translate "Save changes" %}{% endif %}</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

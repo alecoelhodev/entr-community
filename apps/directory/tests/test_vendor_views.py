@@ -94,6 +94,7 @@ class BusinessCreateTests(VendorTestCase):
 
     def assertFieldError(self, res, field):
         self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Please fix the highlighted fields.")
         self.assertIn(field, res.context["form"].errors)
         self.assertFalse(Business.objects.exists())
 
@@ -205,6 +206,10 @@ class BusinessEditTests(VendorTestCase):
         res = self.client.get(self.edit_url(business))
         self.assertContains(res, 'value="Cuatro lessons"')
         self.assertContains(res, 'value="25.8195"')
+
+    def test_edit_rejected_shows_moderator_note(self):
+        business = self.make(status=Business.Status.REJECTED, rejection_reason="Add a price.")
+        self.assertContains(self.client.get(self.edit_url(business)), "Add a price.")
 
     def test_edit_other_users_business_404(self):
         business = self.make(owner=self.other)
