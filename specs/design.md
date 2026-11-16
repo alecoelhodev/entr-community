@@ -11,6 +11,7 @@ The approved mockups are at https://claude.ai/artifact/PVv2PjiiMunuoWRnFed2wV. T
 | Sign up (`Signup`) | `/accounts/signup/` (login reuses the card) | T01 |
 | Vendor: my businesses (`Dashboard`) | `/me/businesses/` | T07 |
 | Vendor: new listing (`ListingForm`) | `/me/businesses/new/`, `…/edit/` | T07 |
+| Media carousel (`MediaDetail`, `MediaMobile`, `MediaForm`) | `/b/<slug>/`, listing form | T14 wireframe (pending approval) → T15 |
 
 ## Tokens
 

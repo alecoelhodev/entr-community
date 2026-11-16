@@ -17,7 +17,15 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 | [T06](tasks/T06-business-detail.md) | Business detail page + panel | T02 | done |
 | [T07](tasks/T07-vendor-dashboard.md) | Vendor dashboard: create/edit listings | T01, T02 | done |
 | [T08](tasks/T08-reviews.md) | Reviews and rating aggregate | T01, T06 | done |
-| [T09](tasks/T09-cutover.md) | Cutover: remove `places`, Doral seed data | T05, T07, T08 | in progress |
+| [T09](tasks/T09-cutover.md) | Cutover: remove `places`, Doral seed data | T05, T07, T08 | done |
+| **Launch follow-ups** | | | |
+| [T10](tasks/T10-maptiler-tiles.md) | MapTiler tiles | — | ready (needs your MapTiler key) |
+| [T11](tasks/T11-transaction-retry.md) | Retry review writes on transient transaction errors | — | ready |
+| [T12](tasks/T12-rate-limiting.md) | Rate limiting (Redis + django-ratelimit) | — | ready (PR draft until ⚠ infra steps) |
+| **Product additions** | | | |
+| [T13](tasks/T13-address-prominent.md) | Required, prominent business address | — | ready |
+| [T14](tasks/T14-media-carousel-wireframe.md) | Media carousel: wireframe (design only) | — | ready (⚠ needs your approval) |
+| [T15](tasks/T15-media-carousel.md) | Media carousel: Instagram/YouTube embeds | T14 | blocked |
 
 ```
 T00 (independent)
@@ -31,9 +39,16 @@ T03 → T02 ─┬─ T04 ─┐                         │
            └─ T07 ◄────────┼─────────────────┘
                            ▼
               T09 (after T05, T07, T08)
+
+Launch follow-ups (after the MVP, one at a time in this order):
+T10 → T11 → T12
+
+Product additions:
+T13 (independent)
+T14 (wireframe, approved by you) → T15
 ```
 
-T00, T01 and T03 can start in parallel. After T02 merges, T04, T06 and T07 can run in parallel.
+T00, T01 and T03 can start in parallel. After T02 merges, T04, T06 and T07 can run in parallel. The launch follow-ups have no code dependencies on each other, but are worked one at a time in order.
 
 ## Workflow
 

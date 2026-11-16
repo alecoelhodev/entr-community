@@ -29,6 +29,8 @@ The approved UI design is in [design.md](design.md).
 | US-11 | customer | rate (1–5) and review a business once, and edit or delete my review | others benefit from my experience | T08 |
 | US-12 | moderator | hide abusive reviews | the community stays trustworthy | T08 |
 | US-13 | team | run CI on every PR | broken work never reaches `main` | T00 |
+| US-14 | customer | see a business's address right under its name, in the map sidebar and on its page | I know where to go without hunting for it | T13 |
+| US-15 | customer | browse a business's photos and videos (from its Instagram and YouTube) on its page | I can see what it offers before I visit | T14, T15 |
 
 ## Domain model
 
@@ -53,7 +55,7 @@ All new models live in `apps.directory`, except the user, which lives in `apps.a
 | `category` | FK `Category` | `on_delete=PROTECT` |
 | `description` | Text, blank | |
 | `location` | `PointField(srid=4326)` | Gets an automatic 2dsphere index |
-| `address` | Char 200, blank | Free text; no geocoding in the MVP |
+| `address` | Char 200, required (T13) | Free text; no geocoding in the MVP. Shown under the name everywhere |
 | `phone`, `website` | Char / URL, blank | Shown publicly; the vendor chooses whether to fill them |
 | `instagram` | Char 30, blank | Handle only, stored without `@`. Must match `^[A-Za-z0-9._]{1,30}$`. Rendered as a link to `https://www.instagram.com/<handle>/`, never from a user-supplied URL |
 | `offers_delivery` | Boolean, default False | Shows the "Delivery" badge |
@@ -61,6 +63,7 @@ All new models live in `apps.directory`, except the user, which lives in `apps.a
 | `status` | Char choices | `pending` (default) / `approved` / `rejected` |
 | `rejection_reason` | Text, blank | Shown to the owner only |
 | `offerings` | `EmbeddedModelArrayField(Offering)` | See below |
+| `media` | `EmbeddedModelArrayField(MediaItem)`, ≤ 8 (T15) | Instagram post/reel or YouTube video refs parsed from pasted links, plus an optional caption. Embedded click-to-load; never a raw URL |
 | `search_terms` | `ArrayField(CharField)` | Derived on `save()`; never edited directly |
 | `rating_sum`, `rating_count` | PositiveInteger, default 0 | Denormalized and updated atomically (T08) |
 | `created_at`, `updated_at` | DateTime | `auto_now_add` / `auto_now` |
@@ -111,14 +114,15 @@ All prices are USD in the MVP.
 - Address geocoding: needs an external service.
 - User geolocation.
 - Atlas Search.
-- Photos and uploads.
+- Photo and video uploads. Media comes only from Instagram/YouTube embeds (T15).
 - Messaging between users.
 - Spanish locale: strings are i18n-wrapped, so it's a translation-only follow-up.
 
 ## Known risks before public launch
 
-- **No rate limiting or CAPTCHA** on signup, login or reviews. Add before announcing publicly.
-- **OSM public tile server.** Set `MAP_TILE_URL` to a commercial or self-hosted provider (see `docs/deployment.md`).
+- **No rate limiting** on signup, login, reviews or listing writes. Add before announcing publicly → [T12](tasks/T12-rate-limiting.md) (Redis + django-ratelimit).
+- **OSM public tile server.** Switch `MAP_TILE_URL` to a commercial provider → [T10](tasks/T10-maptiler-tiles.md) (MapTiler).
+- **Transient transaction errors** on review writes surface as a 500 → [T11](tasks/T11-transaction-retry.md).
 
 ## Open questions
 
