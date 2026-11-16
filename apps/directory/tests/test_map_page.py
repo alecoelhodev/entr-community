@@ -33,6 +33,10 @@ class MapPageTests(TestCase):
             with self.subTest(attr=attr):
                 self.assertContains(self.res, attr)
 
+    def test_tile_attribution_attribute_present(self):
+        self.assertContains(self.res, "data-tile-attribution=")
+        self.assertContains(self.res, "&lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;")
+
     def test_category_options_rendered(self):
         self.assertContains(self.res, '<option value="">All categories</option>', html=True)
         self.assertContains(self.res, '<option value="bakery">Bakery</option>', html=True)

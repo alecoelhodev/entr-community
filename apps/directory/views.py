@@ -29,6 +29,7 @@ def map_page(request):
         "directory/map.html",
         {
             "tile_url": settings.MAP_TILE_URL,
+            "tile_attribution": settings.MAP_TILE_ATTRIBUTION,
             "center_lat": lat,
             "center_lng": lng,
             "zoom": settings.MAP_DEFAULT_ZOOM,
@@ -199,6 +200,7 @@ def _edit_business(request, business):
             "business": business,
             "is_new": is_new,
             "tile_url": settings.MAP_TILE_URL,
+            "tile_attribution": settings.MAP_TILE_ATTRIBUTION,
             "default_center": settings.MAP_DEFAULT_CENTER,
         },
     )

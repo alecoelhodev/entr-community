@@ -110,6 +110,11 @@ class BusinessCreateTests(VendorTestCase):
         self.assertContains(res, 'name="offerings-0-name"')
         self.assertContains(res, "js/location-picker.js")
 
+    def test_create_form_renders_tile_attribution(self):
+        res = self.client.get(self.url)
+        self.assertContains(res, "data-tile-attribution=")
+        self.assertContains(res, "&lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;")
+
     def test_create_sets_owner_and_pending(self):
         res = self.post()
         self.assertRedirects(res, reverse("directory:my_businesses"), fetch_redirect_response=False)

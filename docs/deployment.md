@@ -105,7 +105,16 @@ Then re-run the workflow. The binding persists across later deploys. CI delibera
 
 ## Map tiles
 
-OpenStreetMap's public tile servers [forbid heavy use](https://operations.osmfoundation.org/policies/tiles/). Before real traffic, set `MAP_TILE_URL` to a commercial or self-hosted provider. The CSP `img-src` follows that origin automatically. If it isn't set, the workflow falls back to OSM.
+OpenStreetMap's public tile servers [forbid heavy use](https://operations.osmfoundation.org/policies/tiles/), so production uses [MapTiler](https://www.maptiler.com/). If `MAP_TILE_URL` isn't set, the workflow falls back to OSM.
+
+1. Create a MapTiler account and an API key. Under the key's allowed HTTP origins, enter the Cloud Run hostname as a bare domain, with no `https://` and no port: `entr-community-<project-number>.<region>.run.app`. Add `localhost` (no port) only if you want MapTiler locally. Never use `*.run.app`, which would allow every Cloud Run app.
+2. Set the repo variable. The key is a publishable browser key, visible in page source by design, so a repo variable is the right home. Don't paste it into chat, commits or issues.
+   ```sh
+   gh variable set MAP_TILE_URL --body 'https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=<KEY>'
+   ```
+3. Re-run the workflow.
+
+The CSP `img-src` origin and the map attribution (`config/tiles.py`) both follow the tile host: `api.maptiler.com` gets "© MapTiler © OpenStreetMap contributors", and any other host gets the OSM attribution. A new provider that requires its own credit needs an entry there. Tile layers send `strict-origin-when-cross-origin` referrers so origin-restricted keys see the site's origin.
 
 ## Gotchas
 

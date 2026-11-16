@@ -4,6 +4,8 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.csp import CSP
 
+from config.tiles import tile_config
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
@@ -111,13 +113,13 @@ STORAGES = {
     },
 }
 
-# Map tiles. OSM's public tile servers are for light use only; point this at a
-# commercial or self-hosted tile server before production traffic.
+# Map tiles. OSM's public tile servers are for light use only; production uses
+# MapTiler (see docs/deployment.md). Attribution follows the tile host.
 MAP_TILE_URL = os.environ.get("MAP_TILE_URL", "https://tile.openstreetmap.org/{z}/{x}/{y}.png")
 # Doral, FL. User geolocation is a post-MVP feature.
 MAP_DEFAULT_CENTER = (25.8195, -80.3553)
 MAP_DEFAULT_ZOOM = 13
-_tile_origin = "/".join(MAP_TILE_URL.split("/")[:3]).replace("{s}.", "*.")
+_tile_origin, MAP_TILE_ATTRIBUTION = tile_config(MAP_TILE_URL)
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
