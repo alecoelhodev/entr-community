@@ -58,7 +58,7 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 
 ## Front-end / CSP constraints
 
-- Strict CSP via Django's built-in `ContentSecurityPolicyMiddleware` (`SECURE_CSP` in settings): scripts/styles `'self'` only, `img-src` adds the tile origin derived from `MAP_TILE_URL`. No CDNs, no inline scripts/styles.
+- Strict CSP via Django's built-in `ContentSecurityPolicyMiddleware` (`SECURE_CSP` in settings): scripts/styles `'self'` only, `img-src` adds the tile origin derived from `MAP_TILE_URL` by `config/tiles.py`, which also picks the attribution (`MAP_TILE_ATTRIBUTION` → `data-tile-attribution`). No CDNs, no inline scripts/styles.
 - JS libs are vendored in `static/vendor/` (versions in `static/vendor/VERSIONS`); update the file when bumping. Production uses `CompressedManifestStaticFilesStorage`, so vendored files must have their referenced sourcemaps present or `collectstatic` fails.
 - Alpine is the CSP build: define components with `Alpine.data()` in JS; templates may only use simple property access, no inline expressions. Alpine loads last in `base.html` so page scripts can register on `alpine:init`.
 - Keep Leaflet objects in closure variables, not on the Alpine component (Alpine's reactive proxies break Leaflet).
@@ -71,4 +71,4 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 
 ## Config
 
-Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. Map default center/zoom are settings constants (`MAP_DEFAULT_CENTER`, Doral FL; `MAP_DEFAULT_ZOOM`), not env vars. The public OSM tile server is for light use only; switch `MAP_TILE_URL` before production traffic.
+Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. Map default center/zoom are settings constants (`MAP_DEFAULT_CENTER`, Doral FL; `MAP_DEFAULT_ZOOM`), not env vars. Production tiles come from MapTiler via the `MAP_TILE_URL` repo variable; OSM is the local default.

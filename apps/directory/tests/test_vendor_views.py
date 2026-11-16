@@ -113,7 +113,7 @@ class BusinessCreateTests(VendorTestCase):
     def test_create_form_renders_tile_attribution(self):
         res = self.client.get(self.url)
         self.assertContains(res, "data-tile-attribution=")
-        self.assertContains(res, "OpenStreetMap contributors")
+        self.assertContains(res, "&lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;")
 
     def test_create_sets_owner_and_pending(self):
         res = self.post()

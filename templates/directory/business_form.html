@@ -43,6 +43,7 @@
 
     <fieldset class="card form-section" x-data="locationPicker"
               data-tile-url="{{ tile_url }}"
+              data-tile-attribution="{{ tile_attribution }}"
               data-default-lat="{{ default_center.0|stringformat:'s' }}"
               data-default-lng="{{ default_center.1|stringformat:'s' }}">
       <legend>{% translate "Location" %}</legend>

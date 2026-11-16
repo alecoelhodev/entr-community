@@ -45,7 +45,7 @@ document.addEventListener("alpine:init", () => {
           maxZoom: 19,
           // OSM's tile policy requires a Referer; the page-wide policy (same-origin) strips it.
           referrerPolicy: "strict-origin-when-cross-origin",
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          attribution: data.tileAttribution,
         }).addTo(map);
 
         markers = L.geoJSON(null, {
