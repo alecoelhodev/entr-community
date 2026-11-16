@@ -1,6 +1,6 @@
 # T10: MapTiler tiles
 
-**Status:** in review
+**Status:** done
 **Depends on:** — (MVP done)
 **User stories:** US-1 (launch readiness)
 
