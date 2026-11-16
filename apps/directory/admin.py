@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _, ngettext
-from django_mongodb_backend.transaction import atomic
 
 from apps.geo.forms import LatLngFieldsMixin
 
 from .models import Business, Category, Review
 from .ratings import apply_rating_delta
+from .transactions import run_in_transaction
 
 
 @admin.register(Category)
@@ -81,13 +81,14 @@ class ReviewAdmin(admin.ModelAdmin):
         self.message_user(request, ngettext("%d review unhidden.", "%d reviews unhidden.", count) % count)
 
     def _set_hidden(self, queryset, hidden: bool) -> int:
-        changed = 0
-        for pk in queryset.filter(is_hidden=not hidden).values_list("pk", flat=True):
-            with atomic():
-                # Conditional update: only the request that flips the flag applies the delta.
-                review = Review.objects.filter(pk=pk, is_hidden=not hidden).first()
-                if review and Review.objects.filter(pk=pk, is_hidden=not hidden).update(is_hidden=hidden):
-                    sign = -1 if hidden else 1
-                    apply_rating_delta(review.business_id, sign * review.rating, sign)
-                    changed += 1
-        return changed
+        def flip(pk):
+            # Conditional update: only the request that flips the flag applies the delta.
+            review = Review.objects.filter(pk=pk, is_hidden=not hidden).first()
+            if review and Review.objects.filter(pk=pk, is_hidden=not hidden).update(is_hidden=hidden):
+                sign = -1 if hidden else 1
+                apply_rating_delta(review.business_id, sign * review.rating, sign)
+                return True
+            return False
+
+        pks = queryset.filter(is_hidden=not hidden).values_list("pk", flat=True)
+        return sum(run_in_transaction(lambda: flip(pk)) for pk in pks)
