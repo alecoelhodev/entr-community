@@ -7,7 +7,6 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
-from django_mongodb_backend.transaction import atomic
 
 from apps.geo.forms import BBoxForm, NearbyQueryForm
 from apps.geo.geojson import feature_collection
@@ -16,6 +15,7 @@ from apps.geo.queries import in_bbox, nearest
 from .forms import BusinessFilterForm, BusinessForm, OfferingFormSet, ReviewForm
 from .models import Business, Category, Review
 from .ratings import apply_rating_delta
+from .transactions import run_in_transaction
 
 MAX_MAP_FEATURES = 500
 MAX_NEARBY_RESULTS = 50
@@ -223,10 +223,13 @@ def review_create(request, slug):
     if Review.objects.filter(business=business, author=request.user).exists():
         form.add_error(None, _("You already reviewed this business."))
     elif form.is_valid():
+        def write():
+            # A fresh instance per attempt: an aborted attempt may have assigned a pk.
+            review = Review.objects.create(business=business, author=request.user, **form.cleaned_data)
+            apply_rating_delta(business.pk, review.rating, 1)
+
         try:
-            with atomic():
-                review = form.save()
-                apply_rating_delta(business.pk, review.rating, 1)
+            run_in_transaction(write)
         except IntegrityError:
             # Lost a race with a concurrent submit; the unique index held.
             form.add_error(None, _("You already reviewed this business."))
@@ -240,8 +243,9 @@ def review_create(request, slug):
 @require_POST
 def review_update(request, slug):
     business = _reviewable_business(request, slug)
-    # Read the old rating in the same transaction as the write, so a concurrent hide can't skew the delta.
-    with atomic():
+
+    def write():
+        # Read the old rating in the same transaction as the write, so a concurrent hide can't skew the delta.
         review = get_object_or_404(Review, business=business, author=request.user)
         old_rating = review.rating
         form = ReviewForm(request.POST, instance=review)
@@ -249,6 +253,9 @@ def review_update(request, slug):
             review = form.save()
             if not review.is_hidden:
                 apply_rating_delta(business.pk, review.rating - old_rating, 0)
+        return form
+
+    form = run_in_transaction(write)
     if not form.is_valid():
         return _render_detail(request, business, edit_form=form, status=400)
     messages.success(request, _("Your review was updated."))
@@ -259,8 +266,11 @@ def review_update(request, slug):
 @require_POST
 def review_delete(request, slug):
     business = _reviewable_business(request, slug)
-    review = get_object_or_404(Review, business=business, author=request.user)
-    with atomic():
-        review.delete()  # The post_delete signal adjusts the aggregate.
+
+    def write():
+        # Fetched per attempt: delete() clears the instance's pk, which would break a retry.
+        get_object_or_404(Review, business=business, author=request.user).delete()  # post_delete adjusts the aggregate.
+
+    run_in_transaction(write)
     messages.success(request, _("Your review was deleted."))
     return redirect("directory:detail", slug=business.slug)

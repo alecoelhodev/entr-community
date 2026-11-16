@@ -2,8 +2,9 @@
 
 Cloud Run runs several workers and instances, so every change is an atomic
 `$inc`-style F() update, never a read-modify-write. Callers pair the review
-write and the delta inside `django_mongodb_backend.transaction.atomic()`
-(Django's own `transaction.atomic()` is a no-op on this backend).
+write and the delta in one MongoDB transaction via
+`apps.directory.transactions.run_in_transaction` (Django's own
+`transaction.atomic()` is a no-op on this backend).
 """
 
 from django.db.models import F

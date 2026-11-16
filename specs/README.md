@@ -20,7 +20,7 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 | [T09](tasks/T09-cutover.md) | Cutover: remove `places`, Doral seed data | T05, T07, T08 | done |
 | **Launch follow-ups** | | | |
 | [T10](tasks/T10-maptiler-tiles.md) | MapTiler tiles | — | in review (needs your MapTiler key) |
-| [T11](tasks/T11-transaction-retry.md) | Retry review writes on transient transaction errors | — | ready |
+| [T11](tasks/T11-transaction-retry.md) | Retry review writes on transient transaction errors | — | in review |
 | [T12](tasks/T12-rate-limiting.md) | Rate limiting (Redis + django-ratelimit) | — | ready (PR draft until ⚠ infra steps) |
 | **Product additions** | | | |
 | [T13](tasks/T13-address-prominent.md) | Required, prominent business address | — | ready |

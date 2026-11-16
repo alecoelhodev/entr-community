@@ -1,6 +1,6 @@
 # T11: Retry review writes on transient transaction errors
 
-**Status:** ready
+**Status:** in review
 **Depends on:** — (MVP done)
 **User stories:** US-11, US-12 (reliability)
 
