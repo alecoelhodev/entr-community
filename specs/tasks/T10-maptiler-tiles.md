@@ -44,7 +44,7 @@ Production map tiles come from MapTiler instead of the public OpenStreetMap serv
   - `.env.example`: a comment about a local MapTiler URL.
   - CLAUDE.md config line.
 - **⚠ confirm: human steps.** You run these; the key never appears in chat, commits or logs.
-  1. Create a MapTiler account and key. Restrict its allowed origins to the Cloud Run host, plus `http://localhost:8000` if you want MapTiler locally.
+  1. Create a MapTiler account and key. Allowed origins are bare hostnames with no protocol or port: the Cloud Run host (`entr-community-<project-number>.<region>.run.app`), plus `localhost` if you want MapTiler locally. Never `*.run.app`.
   2. Set the repo variable: `gh variable set MAP_TILE_URL --body 'https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=<KEY>'`.
 
 ## Out of scope

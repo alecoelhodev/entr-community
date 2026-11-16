@@ -107,7 +107,7 @@ Then re-run the workflow. The binding persists across later deploys. CI delibera
 
 OpenStreetMap's public tile servers [forbid heavy use](https://operations.osmfoundation.org/policies/tiles/), so production uses [MapTiler](https://www.maptiler.com/). If `MAP_TILE_URL` isn't set, the workflow falls back to OSM.
 
-1. Create a MapTiler account and an API key. In the key's settings, restrict allowed origins to the Cloud Run host (add `http://localhost:8000` only if you want MapTiler locally).
+1. Create a MapTiler account and an API key. Under the key's allowed HTTP origins, enter the Cloud Run hostname as a bare domain, with no `https://` and no port: `entr-community-<project-number>.<region>.run.app`. Add `localhost` (no port) only if you want MapTiler locally. Never use `*.run.app`, which would allow every Cloud Run app.
 2. Set the repo variable. The key is a publishable browser key, visible in page source by design, so a repo variable is the right home. Don't paste it into chat, commits or issues.
    ```sh
    gh variable set MAP_TILE_URL --body 'https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=<KEY>'
