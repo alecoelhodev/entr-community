@@ -16,7 +16,7 @@ services:
       retries: 20
       start_period: 5s
 
-  # Matches the Memorystore for Redis 7.2 used in production (rate-limit counters).
+  # Local stand-in for the external production Redis (rate-limit counters).
   redis:
     image: redis:7.2-alpine
     healthcheck:

@@ -121,10 +121,7 @@ jobs:
           # No --allow-unauthenticated: run.developer can't set IAM policy, so it
           # would silently no-op. Public access is a one-time allUsers grant
           # (docs/deployment.md), keeping run.admin out of CI.
-          # Direct VPC egress reaches the private Memorystore IP; Atlas stays on the public path.
-          flags: >-
-            --service-account=entr-community-runtime@${{ env.PROJECT_ID }}.iam.gserviceaccount.com --port=8000
-            --network=${{ vars.VPC_NETWORK }} --subnet=${{ vars.VPC_SUBNET }} --vpc-egress=private-ranges-only
+          flags: '--service-account=entr-community-runtime@${{ env.PROJECT_ID }}.iam.gserviceaccount.com --port=8000'
           # gunicorn's default single sync worker would serialize requests under
           # Cloud Run's per-instance concurrency.
           env_vars: |-
@@ -133,12 +130,10 @@ jobs:
             MONGODB_NAME=entr_community
             MAP_TILE_URL=${{ vars.MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' }}
             GUNICORN_CMD_ARGS=--workers=2 --threads=4 --timeout=0
-            REDIS_CA_FILE=/etc/redis/ca.pem
           secrets: |-
             DJANGO_SECRET_KEY=entr-django-secret-key:latest
             MONGODB_URI=entr-mongodb-uri:latest
             REDIS_URL=entr-redis-url:latest
-            /etc/redis/ca.pem=entr-redis-ca:latest
 
       # Traffic has already shifted: this detects a bad revision, it doesn't
       # prevent it. Rollback: docs/deployment.md.
