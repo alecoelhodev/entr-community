@@ -116,6 +116,28 @@ OpenStreetMap's public tile servers [forbid heavy use](https://operations.osmfou
 
 The CSP `img-src` origin and the map attribution (`config/tiles.py`) both follow the tile host: `api.maptiler.com` gets "© MapTiler © OpenStreetMap contributors", and any other host gets the OSM attribution. A new provider that requires its own credit needs an entry there. Tile layers send `strict-origin-when-cross-origin` referrers so origin-restricted keys see the site's origin.
 
+## Redis (rate limiting)
+
+Rate limits (`config/ratelimit.py`) count in the Django cache. Cloud Run runs several instances, so production needs a shared Redis; this project uses an existing external instance (not Memorystore). On Cloud Run (`K_SERVICE` set), settings refuse to boot unless `REDIS_URL` is set **and** uses `rediss://`. The CI `migrate` step and local dev don't need it.
+
+Create the secret **before** merging a workflow that references it, or the deploy fails (the old revision keeps serving).
+
+1. **Instance requirements**
+   - TLS with a publicly trusted certificate (redis-py verifies it against the system CA store; no CA file is mounted).
+   - Password auth. If the provider supports ACLs, use a dedicated user limited to the `entr:*` keys (the cache's `KEY_PREFIX`).
+   - Reachable from Cloud Run. Cloud Run has no fixed egress IP, so the instance can't IP-allowlist it; it relies on TLS + password. (A real allowlist needs Cloud NAT with a static IP; not set up here.)
+   - In or near `REGION`: every rate-limited POST makes two round trips.
+2. **Secret.** The URL holds the password, so read it without echoing:
+   ```bash
+   read -rs REDIS_URL && printf '%s' "$REDIS_URL" \
+     | gcloud secrets create entr-redis-url --project=PROJECT_ID --data-file=- && unset REDIS_URL
+   gcloud secrets add-iam-policy-binding entr-redis-url --project=PROJECT_ID \
+     --member="serviceAccount:$RUNTIME_SA" --role="roles/secretmanager.secretAccessor"
+   ```
+   Format: `rediss://[USER]:PASSWORD@HOST:PORT/DB`.
+
+**After the first deploy with Redis**, check that the client-IP key ignores spoofed headers: send 11 failed login POSTs to `/accounts/login/`, each with a different `X-Forwarded-For` value. The 11th must return 429. Then log in from a different network (e.g. a phone off Wi-Fi): it must **not** be 429. If it is, every visitor shares one counter and `client_ip` needs fixing.
+
 ## Gotchas
 
 - **Migrations run before traffic shifts**, from the newly built image, so the serving revision briefly sees the new schema. Keep migrations additive and split destructive changes across two deploys.

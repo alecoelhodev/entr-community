@@ -1,4 +1,5 @@
 from django.contrib.auth import SESSION_KEY, get_user_model
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
 
@@ -17,7 +18,12 @@ def signup_data(**overrides):
     return data
 
 
-class SignupViewTests(TestCase):
+class AuthViewTestCase(TestCase):
+    def setUp(self):
+        cache.clear()  # Every test client shares 127.0.0.1, so rate-limit counts would leak between tests.
+
+
+class SignupViewTests(AuthViewTestCase):
     url = reverse_lazy("accounts:signup")
 
     def test_signup_page_renders(self):
@@ -58,7 +64,7 @@ class SignupViewTests(TestCase):
                 self.assertIn("Content-Security-Policy", res.headers)
 
 
-class LoginLogoutTests(TestCase):
+class LoginLogoutTests(AuthViewTestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user(

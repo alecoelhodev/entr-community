@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Too many attempts" %} · entr community{% endblock %}
+{% block content %}
+<div class="content-page narrow">
+  <h1>{% translate "Too many attempts" %}</h1>
+  <p class="page-lead">{% translate "Too many attempts. Try again in a few minutes." %}</p>
+  <a href="{% url 'directory:map' %}" class="btn btn-secondary">{% translate "Back to the map" %}</a>
+</div>
+{% endblock %}

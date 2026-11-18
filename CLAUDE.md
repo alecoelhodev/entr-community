@@ -9,7 +9,7 @@ Django 6.1 server-rendered templates + HTMX + Alpine.js (CSP build) + Leaflet/OS
 ## Commands
 
 ```sh
-docker compose up --build -d                              # mongo (single-node replica set rs0) + web (runserver)
+docker compose up --build -d                              # mongo (single-node replica set rs0) + redis + web (runserver)
 docker compose exec web python manage.py migrate
 docker compose exec web python manage.py seed_directory   # fictional Doral demo businesses, idempotent
 docker compose exec web python manage.py createsuperuser  # prompts for email (no username)
@@ -64,6 +64,7 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 - Keep Leaflet objects in closure variables, not on the Alpine component (Alpine's reactive proxies break Leaflet).
 - htmx is configured via a meta tag with `allowEval: false` and `includeIndicatorStyles: false`; CSRF token is sent through `hx-headers` on `<body>`.
 - Views use `@require_safe` for read-only endpoints (GET + HEAD).
+- POST rate limits: `config/ratelimit.py` `@ratelimit(group, key, rate)`, a fixed-window counter on the Django cache (compose runs Redis). Apply it inside `@login_required` when keying on the user; `client_ip` takes the rightmost `X-Forwarded-For` entry. Over the limit renders `templates/429.html`. Tests that POST to limited views call `cache.clear()` in `setUp`.
 
 ## Deployment
 
@@ -71,4 +72,4 @@ Product specs and agent tasks (test-first): `specs/`. Start with `specs/README.m
 
 ## Config
 
-Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`. Map default center/zoom are settings constants (`MAP_DEFAULT_CENTER`, Doral FL; `MAP_DEFAULT_ZOOM`), not env vars. Production tiles come from MapTiler via the `MAP_TILE_URL` repo variable; OSM is the local default.
+Env vars (see `.env.example`): `DJANGO_DEBUG`, `DJANGO_SECRET_KEY` (required when DEBUG is off — settings raise otherwise), `DJANGO_ALLOWED_HOSTS`, `MONGODB_URI`, `MONGODB_NAME`, `MAP_TILE_URL`, `REDIS_URL` (external Redis; cache keys prefixed `entr`). Without it the cache is LocMem, except on Cloud Run (`K_SERVICE` set), where settings require a `rediss://` URL. Map default center/zoom are settings constants (`MAP_DEFAULT_CENTER`, Doral FL; `MAP_DEFAULT_ZOOM`), not env vars. Production tiles come from MapTiler via the `MAP_TILE_URL` repo variable; OSM is the local default.

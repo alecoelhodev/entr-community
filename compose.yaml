@@ -16,12 +16,22 @@ services:
       retries: 20
       start_period: 5s
 
+  # Local stand-in for the external production Redis (rate-limit counters).
+  redis:
+    image: redis:7.2-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       DJANGO_DEBUG: "1"
       MONGODB_URI: mongodb://mongo:27017/?replicaSet=rs0&directConnection=true
+      REDIS_URL: redis://redis:6379/0
     env_file:
       - path: .env
         required: false
@@ -31,6 +41,8 @@ services:
       - .:/app
     depends_on:
       mongo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:

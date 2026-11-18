@@ -133,6 +133,7 @@ jobs:
           secrets: |-
             DJANGO_SECRET_KEY=entr-django-secret-key:latest
             MONGODB_URI=entr-mongodb-uri:latest
+            REDIS_URL=entr-redis-url:latest
 
       # Traffic has already shifted: this detects a bad revision, it doesn't
       # prevent it. Rollback: docs/deployment.md.

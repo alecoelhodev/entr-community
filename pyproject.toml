@@ -8,6 +8,7 @@ dependencies = [
     "django-htmx>=1.29,<2",
     "whitenoise>=6.12,<7",
     "gunicorn>=26,<27",
+    "redis>=8.1,<9",
 ]
 
 [tool.uv]
