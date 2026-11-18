@@ -11,6 +11,7 @@ from django.views.decorators.http import require_http_methods, require_POST, req
 from apps.geo.forms import BBoxForm, NearbyQueryForm
 from apps.geo.geojson import feature_collection
 from apps.geo.queries import in_bbox, nearest
+from config.ratelimit import ratelimit, user_key
 
 from .forms import BusinessFilterForm, BusinessForm, OfferingFormSet, ReviewForm
 from .models import Business, Category, Review
@@ -152,12 +153,14 @@ def my_businesses(request):
 
 @login_required
 @require_http_methods(["GET", "HEAD", "POST"])
+@ratelimit("business-create", user_key, "10/d")
 def business_create(request):
     return _edit_business(request, Business(owner=request.user))
 
 
 @login_required
 @require_http_methods(["GET", "HEAD", "POST"])
+@ratelimit("business-edit", user_key, "60/h")
 def business_edit(request, slug):
     # Scoped to the owner, so another user's listing is a 404 (no existence leak).
     return _edit_business(request, get_object_or_404(Business, slug=slug, owner=request.user))
@@ -217,6 +220,7 @@ def _reviewable_business(request, slug):
 
 @login_required
 @require_POST
+@ratelimit("review", user_key, "20/h")
 def review_create(request, slug):
     business = _reviewable_business(request, slug)
     form = ReviewForm(request.POST, instance=Review(business=business, author=request.user))
@@ -241,6 +245,7 @@ def review_create(request, slug):
 
 @login_required
 @require_POST
+@ratelimit("review", user_key, "20/h")
 def review_update(request, slug):
     business = _reviewable_business(request, slug)
 
@@ -264,6 +269,7 @@ def review_update(request, slug):
 
 @login_required
 @require_POST
+@ratelimit("review", user_key, "20/h")
 def review_delete(request, slug):
     business = _reviewable_business(request, slug)
 

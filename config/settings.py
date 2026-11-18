@@ -132,6 +132,23 @@ SECURE_CSP = {
     "frame-ancestors": [CSP.NONE],
 }
 
+# Shared cache for rate-limit counters (config/ratelimit.py). Cloud Run runs several
+# instances, so production must use Redis; LocMem is per-process and only fits dev/tests.
+REDIS_URL = os.environ.get("REDIS_URL")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            # Memorystore's in-transit encryption uses its own server CA, mounted from Secret Manager.
+            "OPTIONS": {"ssl_ca_certs": os.environ["REDIS_CA_FILE"]} if os.environ.get("REDIS_CA_FILE") else {},
+        }
+    }
+elif os.environ.get("K_SERVICE"):
+    raise ImproperlyConfigured("REDIS_URL must be set on Cloud Run: rate limits need a cache shared across instances.")
+else:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True

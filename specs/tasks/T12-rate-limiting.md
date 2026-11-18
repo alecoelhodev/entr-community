@@ -1,6 +1,6 @@
-# T12: Rate limiting with Redis + django-ratelimit
+# T12: Rate limiting with Redis
 
-**Status:** ready (the PR stays **draft** until the ⚠ infra steps are done)
+**Status:** in review (the PR stays **draft** until the ⚠ infra steps are done)
 **Depends on:** — (MVP done). Infrastructure prerequisites are below.
 **User stories:** US-6, US-7, US-11 (abuse protection)
 
@@ -9,6 +9,7 @@ Signup, login, reviews and listing writes are rate-limited across all Cloud Run 
 
 ## Context
 - Product decision (2026-11-15): use **Redis + django-ratelimit**.
+- **Decision (2026-11-17):** django-ratelimit is unmaintained. Its last release (4.1.0) was in July 2023, with no Django 5/6 classifiers, and an issue asking whether it's still maintained has gone unanswered. Per the fallback below, the user chose a small in-house fixed-window limiter, `config/ratelimit.py`, on the same Redis cache. Where this spec mentions django-ratelimit's middleware, `RATELIMIT_VIEW` or its system check, read: the decorator renders `429.html` itself, and there's no check to silence.
 - Cloud Run runs several instances, so counters must live in a shared cache. `django-mongodb-backend` 6.1 has no cache backend, so the shared cache is Redis: Memorystore in production, a compose service locally and in CI.
 - Django's built-in `django.core.cache.backends.redis.RedisCache` needs the `redis` (redis-py) package.
 - The CI `migrate` step runs on a GitHub runner that can't reach a private Memorystore instance, and it doesn't need a cache.

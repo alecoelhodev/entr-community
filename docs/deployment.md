@@ -88,6 +88,7 @@ gh variable set GCP_WIF_PROVIDER \
   --body "projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/entr-community"
 gh variable set CLOUD_RUN_HOST --body "entr-community-PROJECT_NUMBER.REGION.run.app"
 gh variable set MAP_TILE_URL --body "https://…/{z}/{x}/{y}.png"   # optional, see below
+# VPC_NETWORK / VPC_SUBNET: see "Redis (rate limiting)" below
 ```
 
 `CLOUD_RUN_HOST` becomes `DJANGO_ALLOWED_HOSTS` and is the URL the smoke test hits. If you add a custom domain, update it there.
@@ -115,6 +116,44 @@ OpenStreetMap's public tile servers [forbid heavy use](https://operations.osmfou
 3. Re-run the workflow.
 
 The CSP `img-src` origin and the map attribution (`config/tiles.py`) both follow the tile host: `api.maptiler.com` gets "© MapTiler © OpenStreetMap contributors", and any other host gets the OSM attribution. A new provider that requires its own credit needs an entry there. Tile layers send `strict-origin-when-cross-origin` referrers so origin-restricted keys see the site's origin.
+
+## Redis (rate limiting)
+
+Rate limits (`config/ratelimit.py`) count in the Django cache, and Cloud Run runs several instances, so production needs a shared Redis. Settings refuse to boot on Cloud Run (`K_SERVICE` set) without `REDIS_URL`. The CI `migrate` step and local dev don't need one.
+
+The infrastructure must exist **before** the workflow with Redis settings deploys, or the new revision fails to start (the old one keeps serving).
+
+1. **Instance.** Memorystore for Redis, Basic tier, 1 GB (the minimum), same region as Cloud Run, AUTH and in-transit encryption on. This has a monthly cost (check the pricing page for `REGION`).
+   ```bash
+   gcloud services enable redis.googleapis.com --project=PROJECT_ID
+   gcloud redis instances create entr-ratelimit --project=PROJECT_ID --region=REGION \
+     --tier=basic --size=1 --redis-version=redis_7_2 --network=default \
+     --enable-auth --transit-encryption-mode=server-authentication
+   ```
+2. **Secrets.** The URL holds the AUTH string, so it never touches the terminal history or a file:
+   ```bash
+   HOST=$(gcloud redis instances describe entr-ratelimit --region=REGION --project=PROJECT_ID --format='value(host)')
+   gcloud redis instances describe entr-ratelimit --region=REGION --project=PROJECT_ID \
+     --format='value(serverCaCerts[0].cert)' \
+     | gcloud secrets create entr-redis-ca --project=PROJECT_ID --data-file=-
+   printf 'rediss://:%s@%s:6378/0' \
+     "$(gcloud redis instances get-auth-string entr-ratelimit --region=REGION --project=PROJECT_ID --format='value(authString)')" \
+     "$HOST" | gcloud secrets create entr-redis-url --project=PROJECT_ID --data-file=-
+   for SECRET in entr-redis-url entr-redis-ca; do
+     gcloud secrets add-iam-policy-binding "$SECRET" --project=PROJECT_ID \
+       --member="serviceAccount:$RUNTIME_SA" --role="roles/secretmanager.secretAccessor"
+   done
+   ```
+   The workflow mounts the CA at `/etc/redis/ca.pem` (`REDIS_CA_FILE`) and injects `REDIS_URL`.
+3. **Network.** Cloud Run reaches the private Memorystore IP through Direct VPC egress (`--vpc-egress=private-ranges-only`, so Atlas stays on the public path). The deploy principal needs to use the subnet:
+   ```bash
+   gcloud compute networks subnets add-iam-policy-binding default --region=REGION --project=PROJECT_ID \
+     --member="$WIF_MEMBER" --role="roles/compute.networkUser"
+   gh variable set VPC_NETWORK --body default
+   gh variable set VPC_SUBNET --body default
+   ```
+
+**After the first deploy with Redis**, check that the client-IP key ignores spoofed headers: send 11 failed login POSTs to `/accounts/login/`, each with a different `X-Forwarded-For` value. The 11th must return 429. Then log in from a different network (e.g. a phone off Wi-Fi): it must **not** be 429. If it is, every visitor shares one counter and `client_ip` needs fixing.
 
 ## Gotchas
 
