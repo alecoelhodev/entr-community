@@ -1,6 +1,6 @@
 # T13: Required, prominent business address
 
-**Status:** ready
+**Status:** in review
 **Depends on:** — (MVP done)
 **User stories:** US-14
 

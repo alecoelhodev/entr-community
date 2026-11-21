@@ -123,7 +123,7 @@ class BusinessDetailTests(TestCase):
                 name_at, address_at = html.index('class="biz-name"'), html.index('class="biz-address"')
                 self.assertLess(name_at, address_at)
                 self.assertLess(address_at, html.index("123 NW 41st St, Doral, FL"))
-                self.assertLess(html.index("123 NW 41st St, Doral, FL"), html.index("Products &amp; prices"))
+                self.assertLess(html.index("123 NW 41st St, Doral, FL"), html.index('class="offerings"'))
                 self.assertContains(res, '<span class="sr-only">Address:</span>', html=True)
 
     def test_blank_address_renders_no_empty_line(self):

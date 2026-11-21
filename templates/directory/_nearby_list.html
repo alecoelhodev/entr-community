@@ -20,6 +20,7 @@
           {% include "directory/_rating.html" %}
           {% if business.offers_delivery %}<span class="badge">{% translate "Delivery" %}</span>{% endif %}
         </span>
+        {% if business.address %}<span class="result-address">{{ business.address }}</span>{% endif %}
       </li>
     {% empty %}
       <li class="hint">{% translate "No businesses match these filters here." %}</li>

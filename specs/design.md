@@ -50,7 +50,8 @@ Define these as CSS custom properties in `static/css/app.css`. Don't hard-code h
 - **Delivery badge:** pill with `--neutral-chip` background, `--ink` text and a truck icon. Shown only when `offers_delivery`. Reads "Offers delivery" on the panel and page, and "Delivery" in compact lists.
 - **Rating:** star icon, the average in bold, then "(N reviews)". "No reviews yet" when the count is 0.
 - **Offering row/card:** name in bold, description in muted text, and a price line: "From $X.XX <note>", or "Ask for price".
-- **Contact list:** address, phone (`tel:`), website, Instagram (`@handle` linking to `https://www.instagram.com/<handle>/`). External links use `rel="noopener nofollow ugc" target="_blank"`. Each row renders only if set.
+- **Address line (T13):** directly under the name and meta row on the page and panel: muted pin icon (`aria-hidden`), then the address with an `sr-only` "Address:" prefix; wraps on narrow screens; omitted when blank. Result cards show it as one muted line under the category/rating row, truncated with a CSS ellipsis.
+- **Contact list:** phone (`tel:`), website, Instagram (`@handle` linking to `https://www.instagram.com/<handle>/`). External links use `rel="noopener nofollow ugc" target="_blank"`. Each row renders only if set.
 - **Status badge:** a dot plus a label: "Approved · live on the map", "Pending review", or "Needs changes" (the label for `rejected`). A rejected listing also shows a "Moderator note" box with the `rejection_reason`.
 - **Buttons:**
   - Primary: `--accent` background, white text, 12 px radius, ≥ 48 px tall.
