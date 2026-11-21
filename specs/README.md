@@ -21,9 +21,9 @@ Update your row when you start (`in progress`) and when your PR merges (`done`).
 | **Launch follow-ups** | | | |
 | [T10](tasks/T10-maptiler-tiles.md) | MapTiler tiles | — | done |
 | [T11](tasks/T11-transaction-retry.md) | Retry review writes on transient transaction errors | — | in review |
-| [T12](tasks/T12-rate-limiting.md) | Rate limiting (Redis) | — | in review (PR draft until ⚠ infra steps) |
+| [T12](tasks/T12-rate-limiting.md) | Rate limiting (Redis) | — | done |
 | **Product additions** | | | |
-| [T13](tasks/T13-address-prominent.md) | Required, prominent business address | — | ready |
+| [T13](tasks/T13-address-prominent.md) | Required, prominent business address | — | in review |
 | [T14](tasks/T14-media-carousel-wireframe.md) | Media carousel: wireframe (design only) | — | ready (⚠ needs your approval) |
 | [T15](tasks/T15-media-carousel.md) | Media carousel: Instagram/YouTube embeds | T14 | blocked |
 

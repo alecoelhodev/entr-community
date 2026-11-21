@@ -31,6 +31,9 @@
                 · {% translate "Only you can see this listing until it’s approved." %}
               {% endif %}
             </p>
+            {% if not business.address %}
+              <p class="listing-hint"><a href="{% url 'directory:business_edit' business.slug %}">{% translate "Add your address so customers can find you" %}</a></p>
+            {% endif %}
           </div>
           <div class="listing-actions">
             <a href="{% url 'directory:detail' business.slug %}" class="btn btn-secondary">{% translate "View" %}</a>

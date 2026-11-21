@@ -65,7 +65,7 @@ class Business(models.Model):
     description = models.TextField(blank=True)
     # Stored as GeoJSON; the backend creates a 2dsphere index automatically.
     location = models.PointField(srid=4326)
-    address = models.CharField(max_length=200, blank=True)
+    address = models.CharField(max_length=200)
     phone = models.CharField(max_length=30, blank=True)
     website = models.URLField(blank=True)
     instagram = models.CharField(

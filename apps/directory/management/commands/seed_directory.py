@@ -28,13 +28,15 @@ def offer(name, price=None, note="", description=""):
 
 
 # Fictional demo businesses, all inside the Doral bbox (-80.40,25.78,-80.30,25.86).
-# Phone numbers use the reserved 555-01xx range; handles are obviously fake.
+# Phone numbers use the reserved 555-01xx range; handles are obviously fake;
+# addresses are made up (plausible Doral streets, not real businesses).
 BUSINESSES = [
     {
         "slug": "la-casa-del-golfeado",
         "name": "La Casa del Golfeado",
         "category": "bakery",
         "lng": -80.3553, "lat": 25.8195,
+        "address": "8250 NW 36th St, Suite 4, Doral, FL",
         "description": "Family bakery making Venezuelan breads every morning. Party orders with 48 hours’ notice.",
         "started_on": date(2019, 5, 1),
         "offers_delivery": True,
@@ -52,6 +54,7 @@ BUSINESSES = [
         "name": "Panadería Las Delicias",
         "category": "bakery",
         "lng": -80.3480, "lat": 25.8105,
+        "address": "7900 NW 25th St, Unit 12, Doral, FL",
         "description": "Neighborhood bakery with fresh bread, pastries and coffee.",
         "started_on": date(2015, 9, 15),
         "offerings": [
@@ -65,6 +68,7 @@ BUSINESSES = [
         "name": "Doral Print Lab",
         "category": "printing-apparel",
         "lng": -80.3400, "lat": 25.8000,
+        "address": "7480 NW 21st St, Doral, FL",
         "description": "Custom t-shirts, uniforms and banners. Small runs welcome.",
         "started_on": date(2020, 2, 1),
         "offers_delivery": True,
@@ -80,6 +84,7 @@ BUSINESSES = [
         "name": "Andrés Guitar Lessons",
         "category": "music-lessons",
         "lng": -80.3700, "lat": 25.8300,
+        "address": "9100 NW 41st St, Suite 210, Doral, FL",
         "description": "Guitar and cuatro lessons for kids and adults, in Spanish or English.",
         "started_on": date(2018, 3, 1),
         "instagram": "example_guitar",
@@ -94,6 +99,7 @@ BUSINESSES = [
         "name": "Sabor Caraqueño Food Truck",
         "category": "food-truck",
         "lng": -80.3620, "lat": 25.7990,
+        "address": "8600 NW 17th St (lot parking), Doral, FL",
         "description": "Arepas and Venezuelan street food. Weekends near the park.",
         "started_on": date(2022, 6, 10),
         "offers_delivery": True,
@@ -109,6 +115,7 @@ BUSINESSES = [
         "name": "Glow Nails Doral",
         "category": "beauty",
         "lng": -80.3350, "lat": 25.8250,
+        "address": "7200 NW 41st St, Suite 3, Doral, FL",
         "description": "Manicures, pedicures and nail art by appointment.",
         "started_on": date(2021, 11, 20),
         "phone": "(305) 555-0106",
@@ -123,6 +130,7 @@ BUSINESSES = [
         "name": "FixIt Doral Handyman",
         "category": "home-services",
         "lng": -80.3800, "lat": 25.8150,
+        "address": "9700 NW 33rd St, Doral, FL",
         "description": "Small repairs, furniture assembly and TV mounting.",
         "started_on": date(2017, 1, 5),
         "phone": "(305) 555-0107",
@@ -137,6 +145,7 @@ BUSINESSES = [
         "name": "Doral Math Tutoring",
         "category": "tutoring",
         "lng": -80.3900, "lat": 25.8400,
+        "address": "10300 NW 58th St, Suite 105, Doral, FL",
         "description": "Math and SAT prep for middle and high school students.",
         "started_on": date(2025, 9, 1),
         "offerings": [

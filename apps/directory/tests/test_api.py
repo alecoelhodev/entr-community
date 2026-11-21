@@ -118,6 +118,11 @@ class BusinessNearbyTests(TestCase):
         self.assertContains(res, "No reviews yet")
         self.assertContains(res, "0 m")
 
+    def test_result_card_shows_address(self):
+        res = self.get()
+        self.assertContains(res, '<span class="result-address">', count=1)
+        self.assertContains(res, "8250 NW 36th St, Suite 4, Doral, FL", count=1)
+
     def test_nearby_is_partial(self):
         res = self.get()
         self.assertEqual(res.status_code, 200)

@@ -51,17 +51,18 @@ class BusinessForm(LatLngFieldsMixin, forms.ModelForm):
             "started_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "phone": forms.TextInput(attrs={"type": "tel", "autocomplete": "tel"}),
             "website": forms.URLInput(attrs={"placeholder": "https://"}),
-            "address": forms.TextInput(attrs={"placeholder": _("Street, suite, Doral, FL")}),
         }
         labels = {
             "name": _("Business name"),
             "started_on": _("In business since"),
             "offers_delivery": _("I offer delivery"),
-            "address": _("Address shown to customers (optional)"),
+            "address": _("Address"),
         }
         help_texts = {
             "offers_delivery": _("Your listing shows a “Delivery” badge on the map and your page."),
+            "address": _("Shown to customers, e.g. 8250 NW 36th St, Suite 4, Doral, FL"),
         }
+        error_messages = {"address": {"required": _("Enter the address customers should visit")}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

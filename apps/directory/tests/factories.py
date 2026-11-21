@@ -21,6 +21,7 @@ def directory_fixture(test_cls):
     test_cls.categories = {"bakery": bakery, "printing": printing, "music": music}
     test_cls.bakery = Business.objects.create(
         owner=owner, category=bakery, name="La Casa del Golfeado", status=approved,
+        address="8250 NW 36th St, Suite 4, Doral, FL",
         location=BAKERY_POINT, rating_sum=14, rating_count=3,
         offerings=[
             Offering(name="Golfeados", price_from=Decimal("2.50"), price_note="each"),

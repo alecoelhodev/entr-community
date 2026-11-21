@@ -1,6 +1,6 @@
 # T12: Rate limiting with Redis
 
-**Status:** in review (the PR stays **draft** until the ⚠ infra steps are done)
+**Status:** done
 **Depends on:** — (MVP done). Infrastructure prerequisites are below.
 **User stories:** US-6, US-7, US-11 (abuse protection)
 
