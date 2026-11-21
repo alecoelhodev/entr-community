@@ -21,7 +21,7 @@ def form_data(category, **overrides):
         "started_on": "2018-03-01",
         "lat": "25.8195",
         "lng": "-80.3553",
-        "address": "",
+        "address": "8250 NW 36th St, Suite 4, Doral, FL",
         "phone": "(305) 555-0100",
         "website": "https://example.com",
         "instagram": "",
@@ -82,6 +82,13 @@ class VendorDashboardTests(VendorTestCase):
         self.assertNotContains(res, "Not Mine")
         self.assertContains(res, f'href="{reverse("directory:business_create")}"')
 
+    def test_dashboard_prompts_for_missing_address(self):
+        missing = self.make(name="No Address")
+        self.make(name="Has Address", address="1 Main St, Doral, FL")
+        res = self.client.get(self.url)
+        self.assertContains(res, "Add your address so customers can find you", count=1)
+        self.assertContains(res, f'href="{reverse("directory:business_edit", args=[missing.slug])}"', count=2)
+
     def test_header_links_to_dashboard_when_logged_in(self):
         self.assertContains(self.client.get("/"), f'href="{self.url}"')
 
@@ -114,6 +121,20 @@ class BusinessCreateTests(VendorTestCase):
         res = self.client.get(self.url)
         self.assertContains(res, "data-tile-attribution=")
         self.assertContains(res, "&lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;")
+
+    def test_create_requires_address(self):
+        res = self.post(address="")
+        self.assertFieldError(res, "address")
+        self.assertContains(res, "Enter the address customers should visit")
+
+    def test_address_whitespace_only_rejected(self):
+        res = self.post(address="   ")
+        self.assertFieldError(res, "address")
+
+    def test_address_label_and_help(self):
+        res = self.client.get(self.url)
+        self.assertContains(res, '<label for="id_address">Address</label>', html=True)
+        self.assertContains(res, "Shown to customers, e.g. 8250 NW 36th St, Suite 4, Doral, FL")
 
     def test_create_sets_owner_and_pending(self):
         res = self.post()

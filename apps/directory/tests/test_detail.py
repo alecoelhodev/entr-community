@@ -114,6 +114,28 @@ class BusinessDetailTests(TestCase):
         self.assertContains(res, f'href="{reverse("directory:detail", args=[self.business.slug])}"')
         self.assertNotContains(res, "<html")
 
+    def test_address_shown_under_name_on_page_and_panel(self):
+        panel = self.client.get(reverse("directory:panel", args=[self.business.slug]), headers={"HX-Request": "true"})
+        for res in (self.detail(), panel):
+            with self.subTest(url=res.request["PATH_INFO"]):
+                html = res.content.decode()
+                self.assertEqual(html.count("123 NW 41st St, Doral, FL"), 1)
+                name_at, address_at = html.index('class="biz-name"'), html.index('class="biz-address"')
+                self.assertLess(name_at, address_at)
+                self.assertLess(address_at, html.index("123 NW 41st St, Doral, FL"))
+                self.assertLess(html.index("123 NW 41st St, Doral, FL"), html.index("Products &amp; prices"))
+                self.assertContains(res, '<span class="sr-only">Address:</span>', html=True)
+
+    def test_blank_address_renders_no_empty_line(self):
+        other = self.create(status=Business.Status.APPROVED)
+        self.assertNotContains(self.detail(other), "biz-address")
+
+    def test_address_escaped(self):
+        Business.objects.filter(pk=self.business.pk).update(address="<b>Suite 4</b>")
+        res = self.detail()
+        self.assertNotContains(res, "<b>Suite 4</b>")
+        self.assertContains(res, "&lt;b&gt;Suite 4&lt;/b&gt;")
+
     def test_vendor_text_escaped(self):
         Business.objects.filter(pk=self.business.pk).update(description="<script>alert(1)</script>")
         res = self.detail()

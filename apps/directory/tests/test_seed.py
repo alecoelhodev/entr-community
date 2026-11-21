@@ -24,6 +24,11 @@ class SeedDirectoryTests(TestCase):
         self.assertEqual(inside, businesses.count())
         self.assertEqual({b.owner.email for b in businesses.select_related("owner")}, {SEED_EMAIL})
 
+    def test_seeded_businesses_have_addresses(self):
+        seed()
+        for business in Business.objects.all():
+            self.assertTrue(business.address.endswith("Doral, FL"), business.slug)
+
     def test_seed_categories(self):
         seed()
         names = set(Category.objects.values_list("name", flat=True))
